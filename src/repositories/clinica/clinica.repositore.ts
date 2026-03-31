@@ -1,4 +1,4 @@
-import { pool } from '../../config/database.js'; // Ajusta la ruta a tu conexión de BD
+import { pool } from '../../config/database.js';
 import { type ClinicaRow } from '../../domain/clinica/clinica.domain.js';
 
 export class ClinicaRepository {
