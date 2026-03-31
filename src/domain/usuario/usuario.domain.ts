@@ -4,7 +4,7 @@ import { z } from 'zod';
 // 1. CAPA DE VALIDACIÓN (DTOs)
 // ==========================================
 
-// Enum estricto de Zod para los roles (debe coincidir exactamente con MySQL)
+// Enum estricto de Zod para los roles 
 export const UsuarioRol = z.enum(['ADMINISTRADOR', 'PODOLOGO', 'RECEPCIONISTA']);
 export type RolUsuario = z.infer<typeof UsuarioRol>;
 
