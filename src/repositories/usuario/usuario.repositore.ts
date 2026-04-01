@@ -37,21 +37,29 @@ export class UsuarioRepository {
     correo: string, 
     contrasenaHash: string, 
     nombre: string, 
-    apellido: string, 
+    primerApellido: string, 
+    segundoApellido: string | null, // Nuevo parámetro
     rol: RolUsuario
   ): Promise<void> {
     await pool.execute(
-      `INSERT INTO usuarios (id, clinica_id, correo, contrasena_hash, nombre, apellido, rol) 
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [id, clinicaId, correo, contrasenaHash, nombre, apellido, rol]
+      `INSERT INTO usuarios (id, clinica_id, correo, contrasena_hash, nombre, primer_apellido, segundo_apellido, rol) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, clinicaId, correo, contrasenaHash, nombre, primerApellido, segundoApellido, rol]
     );
   }
 
   // 5. Actualizar usuario (sin tocar la contraseña ni la clínica)
-  async update(id: string, correo: string, nombre: string, apellido: string, rol: RolUsuario): Promise<void> {
+  async update(
+    id: string, 
+    correo: string, 
+    nombre: string, 
+    primerApellido: string, 
+    segundoApellido: string | null, 
+    rol: RolUsuario
+  ): Promise<void> {
     await pool.execute(
-      'UPDATE usuarios SET correo = ?, nombre = ?, apellido = ?, rol = ? WHERE id = ?',
-      [correo, nombre, apellido, rol, id]
+      'UPDATE usuarios SET correo = ?, nombre = ?, primer_apellido = ?, segundo_apellido = ?, rol = ? WHERE id = ?',
+      [correo, nombre, primerApellido, segundoApellido, rol, id]
     );
   }
 
