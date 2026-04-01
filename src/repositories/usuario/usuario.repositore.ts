@@ -62,4 +62,13 @@ export class UsuarioRepository {
       [id]
     );
   }
+
+  // 5. Buscar usuario por correo (Para el Login)
+  async findByCorreo(correo: string): Promise<UsuarioRow[]> {
+    const [rows] = await pool.execute<any[]>(
+      'SELECT * FROM usuarios WHERE correo = ? AND esta_activo = 1',
+      [correo]
+    );
+    return rows;
+  }
 }
