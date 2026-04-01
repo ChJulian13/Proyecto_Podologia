@@ -15,7 +15,8 @@ export const CreateUsuarioSchema = z.object({
   // Pedimos la contraseña en texto plano, el Servicio se encargará de encriptarla
   contrasena: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"), 
   nombre: z.string().min(2, "El nombre es muy corto"),
-  apellido: z.string().min(2, "El apellido es muy corto"),
+  primer_apellido: z.string().min(2, "El primer apellido es obligatorio"),
+  segundo_apellido: z.string().optional(), // Es opcional
   rol: UsuarioRol.default('RECEPCIONISTA'),
 });
 
@@ -24,7 +25,8 @@ export const CreateUsuarioSchema = z.object({
 export const UpdateUsuarioSchema = z.object({
   correo: z.string().email("Formato de correo inválido").optional(),
   nombre: z.string().min(2).optional(),
-  apellido: z.string().min(2).optional(),
+  primer_apellido: z.string().min(2).optional(),
+  segundo_apellido: z.string().optional(),
   rol: UsuarioRol.optional(),
 });
 
@@ -43,7 +45,8 @@ export interface UsuarioRow {
   correo: string;
   contrasena_hash: string; // Dato súper sensible
   nombre: string;
-  apellido: string;
+  primer_apellido: string;
+  segundo_apellido: string | null;
   rol: RolUsuario;
   esta_activo: number; 
   fecha_creacion: Date;
@@ -60,7 +63,8 @@ export interface UsuarioEntity {
   clinicaId: string; // Convertimos snake_case a camelCase para JS/TS
   correo: string;
   nombre: string;
-  apellido: string;
+  primerApellido: string;
+  segundoApellido: string | null;
   rol: RolUsuario;
   estaActivo: boolean;
   fechaCreacion: Date;
@@ -77,7 +81,8 @@ export const mapUsuarioRowToEntity = (row: UsuarioRow): UsuarioEntity => {
     clinicaId: row.clinica_id,
     correo: row.correo,
     nombre: row.nombre,
-    apellido: row.apellido,
+    primerApellido: row.primer_apellido,
+    segundoApellido: row.segundo_apellido,
     rol: row.rol,
     estaActivo: row.esta_activo === 1,
     fechaCreacion: row.fecha_creacion,
