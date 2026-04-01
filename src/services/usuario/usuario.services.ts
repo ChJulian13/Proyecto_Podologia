@@ -39,7 +39,8 @@ export class UsuarioService {
       data.correo,
       contrasenaHash,
       data.nombre,
-      data.apellido,
+      data.primer_apellido, 
+      data.segundo_apellido ?? null,
       data.rol
     );
 
@@ -58,10 +59,12 @@ export class UsuarioService {
 
     const newCorreo = data.correo ?? existingRow.correo;
     const newNombre = data.nombre ?? existingRow.nombre;
-    const newApellido = data.apellido ?? existingRow.apellido;
+    const newPrimerApellido = data.primer_apellido ?? existingRow.primer_apellido; 
+    const newSegundoApellido = data.segundo_apellido !== undefined ? data.segundo_apellido : existingRow.segundo_apellido; 
     const newRol = data.rol ?? existingRow.rol;
 
-    await this.usuarioRepository.update(id, newCorreo, newNombre, newApellido, newRol);
+    await this.usuarioRepository.update(id, newCorreo, newNombre, newPrimerApellido, newSegundoApellido, newRol);
+
     return await this.getById(id);
   }
 
