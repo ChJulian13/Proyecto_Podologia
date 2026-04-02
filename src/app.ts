@@ -5,6 +5,7 @@ import usuarioRoutes from './routes/usuario/usuario.routes.js';
 import authRoutes from './routes/auth/auth.routes.js';
 import pacienteRoutes from './routes/paciente/paciente.routes.js';
 import servicioRoutes from './routes/servicio/servicio.routes.js';
+import citaRoutes from './routes/cita/cita.routes.js';
 import cors from 'cors';
 
 const app: Application = express();
@@ -18,6 +19,7 @@ app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/pacientes', pacienteRoutes);
 app.use('/api/servicios', servicioRoutes);
+app.use('/api/citas', citaRoutes); 
 
 app.use((req, res) => {
     res.status(404).json({
