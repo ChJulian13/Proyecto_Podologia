@@ -35,7 +35,7 @@ export class CitaService {
       if (!servicio || servicio.clinica_id !== data.clinica_id) throw new Error('SERVICIO_INVALIDO');
     }
 
-    // 2. 🚨 Validar choque de horarios (Regla de negocio core)
+    // 2. Validar choque de horarios (Regla de negocio core)
     // Agregamos segundos ":00" porque MySQL guarda la hora completa
     const horaCompleta = `${data.hora_programada}:00`; 
     const conflicto = await this.citaRepository.findConflict(data.podologo_id, data.fecha_programada, horaCompleta);
