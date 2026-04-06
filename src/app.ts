@@ -11,15 +11,13 @@ import notaClinicaRoutes from './routes/nota_clinica/nota_clinica.routes.js';
 import imagenRoutes from './routes/imagen_paciente/imagen_paciente.routes.js';
 import facturaRoutes from './routes/factura/factura.routes.js';
 import cors from 'cors';
+import dashboardRoutes from './routes/dashboard/dashboard.routes.js';
 
 const app = express();
 
 app.use(cors());
 
 app.use(express.json());
-
-//const __filename = fileURLToPath(import.meta.url);
-//const __dirname = path.dirname(__filename);
 
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
@@ -32,6 +30,7 @@ app.use('/api/citas', citaRoutes);
 app.use('/api/notas-clinicas', notaClinicaRoutes);
 app.use('/api/imagenes-paciente', imagenRoutes); 
 app.use('/api/facturas', facturaRoutes);
+app.use('/api/dashboard', dashboardRoutes); 
 
 app.use((req, res) => {
     res.status(404).json({
