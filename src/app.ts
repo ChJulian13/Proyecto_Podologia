@@ -12,13 +12,18 @@ import imagenRoutes from './routes/imagen_paciente/imagen_paciente.routes.js';
 import facturaRoutes from './routes/factura/factura.routes.js';
 import cors from 'cors';
 import dashboardRoutes from './routes/dashboard/dashboard.routes.js';
+import cookieParser from 'cookie-parser';
+import { swaggerDocs } from './config/swagger.js'; 
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:4200', 
+  credentials: true 
+}));
 
 app.use(express.json());
-
+app.use(cookieParser());
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 app.use('/api/clinicas', clinicaRoutes);
@@ -32,6 +37,10 @@ app.use('/api/imagenes-paciente', imagenRoutes);
 app.use('/api/facturas', facturaRoutes);
 app.use('/api/dashboard', dashboardRoutes); 
 
+const PORT = process.env.PORT || 3000;
+
+swaggerDocs(app, PORT);
+
 app.use((req, res) => {
     res.status(404).json({
         success: false,
@@ -39,7 +48,6 @@ app.use((req, res) => {
     });
 });
 
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });

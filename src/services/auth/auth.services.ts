@@ -36,7 +36,8 @@ export class AuthService {
     };
 
     const secret = process.env.JWT_SECRET || 'clave_secreta_por_defecto';
-    const token = jwt.sign(payload, secret, { expiresIn: '8h' });
+    const tiempoExpiracion = parseInt(process.env.JWT_EXPIRES_IN || '43200', 10);
+    const token = jwt.sign(payload, secret, { expiresIn: tiempoExpiracion });
 
     return {
         token,

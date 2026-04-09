@@ -13,17 +13,11 @@ export interface AuthRequest extends Request {
 }
 
 export const verificarToken = (req: AuthRequest, res: Response, next: NextFunction): void => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    res.status(401).json({ success: false, message: 'Acceso denegado. Cabecera ausente o inválida.' });
-    return;
-  }
-
-  const token = authHeader.split(' ')[1];
+  // Extraemos el token directamente de la bóveda de cookies del navegador
+  const token = req.cookies?.access_token;
 
   if (!token) {
-    res.status(401).json({ success: false, message: 'Estructura del token mal formada.' });
+    res.status(401).json({ success: false, message: 'Acceso denegado. No hay sesión activa.' });
     return;
   }
 

@@ -11,10 +11,21 @@ export class AuthController {
       
       const { token, usuario } = await this.authService.login(validatedData);
 
+      const expiracionSegundos = parseInt(process.env.JWT_EXPIRES_IN || '43200', 10);
+      const cookieMaxAge = expiracionSegundos * 1000;
+
+      //  Inyectamos la cookie HttpOnly
+      res.cookie('access_token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: cookieMaxAge
+      });
+
+      // CAMBIO: Ya no enviamos el "token" en este JSON
       res.status(200).json({ 
         success: true, 
         message: 'Inicio de sesión exitoso',
-        token, 
         data: usuario 
       });
       
@@ -24,12 +35,24 @@ export class AuthController {
         return;
       }
       if (error.message === 'CREDENCIALES_INVALIDAS') {
-        // Siempre respondemos 401 Unauthorized y con un mensaje genérico por seguridad 
-        // para no darle pistas a atacantes si el fallo fue el correo o la contraseña.
         res.status(401).json({ success: false, message: 'Correo o contraseña incorrectos' });
         return;
       }
       res.status(500).json({ success: false, message: 'Error interno en el inicio de sesión' });
     }
+  };
+
+  // Método para destruir la cookie y cerrar sesión
+  logout = (req: Request, res: Response): void => {
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict'
+    });
+    
+    res.status(200).json({ 
+      success: true, 
+      message: 'Sesión cerrada exitosamente' 
+    });
   };
 }
