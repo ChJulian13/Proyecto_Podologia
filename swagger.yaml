@@ -20,19 +20,74 @@ components:
   schemas:
     CitaEntity:
       type: object
+      required:
+        - id
+        - clinicaId
+        - paciente
+        - podologo
+        - fechaProgramada
+        - horaProgramada
+        - duracionMinutos
+        - estado
       properties:
         id:
           type: string
           format: uuid
         clinicaId:
           type: string
-        pacienteId:
-          type: string
-        podologoId:
-          type: string
-        servicioId:
-          type: string
+          format: uuid
+        paciente:
+          type: object
+          required:
+            - id
+            - nombre
+            - primerApellido
+            - nombreCompleto
+          properties:
+            id:
+              type: string
+              format: uuid
+            nombre:
+              type: string
+            primerApellido:
+              type: string
+            segundoApellido:
+              type: string
+              nullable: true
+            nombreCompleto:
+              type: string
+        podologo:
+          type: object
+          required:
+            - id
+            - nombre
+            - primerApellido
+            - nombreCompleto
+          properties:
+            id:
+              type: string
+              format: uuid
+            nombre:
+              type: string
+            primerApellido:
+              type: string
+            segundoApellido:
+              type: string
+              nullable: true
+            nombreCompleto:
+              type: string
+        servicio:
+          type: object
           nullable: true
+          required:
+            - id
+            - nombre
+          properties:
+            id:
+              type: string
+              format: uuid
+            nombre:
+              type: string
         fechaProgramada:
           type: string
           example: "2026-04-01"
@@ -47,6 +102,12 @@ components:
         notas:
           type: string
           nullable: true
+        fechaCreacion:
+          type: string
+          format: date-time
+        fechaActualizacion:
+          type: string
+          format: date-time
 
     ClinicaEntity:
       type: object
@@ -143,27 +204,89 @@ components:
 
     NotaClinicaEntity:
       type: object
+      required:
+        - id
+        - clinica
+        - paciente
+        - podologo
+        - fechaNota
+        - fechaCreacion
       properties:
         id:
           type: string
           format: uuid
-        clinicaId:
-          type: string
-          format: uuid
-        pacienteId:
-          type: string
-          format: uuid
-        citaId:
-          type: string
-          format: uuid
+        clinica:
+          type: object
+          required:
+            - id
+            - nombre
+          properties:
+            id:
+              type: string
+              format: uuid
+            nombre:
+              type: string
+        paciente:
+          type: object
+          required:
+            - id
+            - nombre
+            - primerApellido
+            - nombreCompleto
+          properties:
+            id:
+              type: string
+              format: uuid
+            nombre:
+              type: string
+            primerApellido:
+              type: string
+            segundoApellido:
+              type: string
+              nullable: true
+            nombreCompleto:
+              type: string
+        podologo:
+          type: object
+          required:
+            - id
+            - nombre
+            - primerApellido
+            - nombreCompleto
+          properties:
+            id:
+              type: string
+              format: uuid
+            nombre:
+              type: string
+            primerApellido:
+              type: string
+            segundoApellido:
+              type: string
+              nullable: true
+            nombreCompleto:
+              type: string
+        cita:
+          type: object
           nullable: true
-        podologoId:
-          type: string
-          format: uuid
+          required:
+            - id
+            - fechaProgramada
+            - servicioNombre
+          properties:
+            id:
+              type: string
+              format: uuid
+            fechaProgramada:
+              type: string
+              format: date
+            servicioNombre:
+              type: string
+              description: Nombre del servicio realizado en esa cita
         fechaNota:
           type: string
           format: date
-          example: "2026-04-08"
+          example: "2026-04-09"
         notas:
           type: string
           nullable: true
@@ -179,13 +302,30 @@ components:
 
     PacienteEntity:
       type: object
+      required:
+        - id
+        - clinica
+        - nombre
+        - primerApellido
+        - nombreCompleto
+        - telefono
+        - estaActivo
+        - fechaCreacion
       properties:
         id:
           type: string
           format: uuid
-        clinicaId:
-          type: string
-          format: uuid
+        clinica:
+          type: object
+          required:
+            - id
+            - nombre
+          properties:
+            id:
+              type: string
+              format: uuid
+            nombre:
+              type: string
         nombre:
           type: string
         primerApellido:
@@ -193,16 +333,19 @@ components:
         segundoApellido:
           type: string
           nullable: true
+        nombreCompleto:
+          type: string
+          description: Nombre concatenado listo para visualización en tablas
         telefono:
           type: string
         correo:
           type: string
+          format: email
           nullable: true
         fechaNacimiento:
           type: string
           format: date
           nullable: true
-          example: "1990-05-15"
         direccion:
           type: string
           nullable: true
@@ -217,70 +360,97 @@ components:
           nullable: true
         estaActivo:
           type: boolean
-          example: true
         fechaCreacion:
           type: string
           format: date-time
 
     ServicioEntity:
       type: object
+      required:
+        - id
+        - clinica
+        - nombre
+        - duracionMinutos
+        - precio
+        - estaActivo
+        - fechaCreacion
       properties:
         id:
           type: string
           format: uuid
-        clinicaId:
-          type: string
-          format: uuid
+        clinica:
+          type: object
+          required:
+            - id
+            - nombre
+          properties:
+            id:
+              type: string
+              format: uuid
+            nombre:
+              type: string
         nombre:
           type: string
-          example: "Corte de uñas preventivo"
         descripcion:
           type: string
           nullable: true
         duracionMinutos:
           type: integer
-          example: 45
         precio:
           type: number
-          description: "Mapeado internamente desde DECIMAL a Number para el Frontend"
-          example: 250.50
+          format: float
+          description: Precio del servicio convertido a número para el Frontend
         estaActivo:
           type: boolean
-          example: true
         fechaCreacion:
           type: string
           format: date-time
 
     UsuarioEntity:
       type: object
-      description: "Representación segura del usuario. Intencionalmente omite el hash de la contraseña."
+      required:
+        - id
+        - clinica
+        - correo
+        - nombre
+        - primerApellido
+        - nombreCompleto
+        - rol
+        - estaActivo
+        - fechaCreacion
       properties:
         id:
           type: string
           format: uuid
-        clinicaId:
-          type: string
-          format: uuid
+        clinica:
+          type: object
+          required:
+            - id
+            - nombre
+          properties:
+            id:
+              type: string
+              format: uuid
+            nombre:
+              type: string
         correo:
           type: string
           format: email
-          example: "juan.recepcion@icsquiropodia.com"
         nombre:
           type: string
-          example: "Juan"
         primerApellido:
           type: string
-          example: "López"
         segundoApellido:
           type: string
           nullable: true
+        nombreCompleto:
+          type: string
+          description: Nombre concatenado listo para mostrar en el perfil o tablas
         rol:
           type: string
           enum: [ADMINISTRADOR, PODOLOGO, RECEPCIONISTA]
-          example: "RECEPCIONISTA"
         estaActivo:
           type: boolean
-          example: true
         fechaCreacion:
           type: string
           format: date-time
