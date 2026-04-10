@@ -3,8 +3,6 @@ import { z } from 'zod';
 // ==========================================
 // 1. CAPA DE VALIDACIÓN (DTOs)
 // ==========================================
-
-// El ciclo de vida de una cita
 export const CitaEstado = z.enum(['PROGRAMADA', 'CONFIRMADA', 'COMPLETADA', 'CANCELADA']);
 export type EstadoCita = z.infer<typeof CitaEstado>;
 
@@ -13,18 +11,12 @@ export const CreateCitaSchema = z.object({
   paciente_id: z.string().uuid("ID de paciente inválido"),
   podologo_id: z.string().uuid("ID de podólogo inválido"),
   servicio_id: z.string().uuid("ID de servicio inválido").optional().nullable(),
-  
-  // Expresión regular para garantizar formato YYYY-MM-DD
   fecha_programada: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de fecha inválido (YYYY-MM-DD)"),
-  
-  // Expresión regular para formato de hora militar HH:MM (ej. 09:30, 14:00)
   hora_programada: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Formato de hora inválido (HH:MM)"),
-  
-  duracion_minutos: z.number().int().positive().default(60), // Por defecto 1 hora
+  duracion_minutos: z.number().int().positive().default(60),
   notas: z.string().optional(),
 });
 
-// Para actualizar, hacemos todo opcional, PERO podemos cambiar el estado
 export const UpdateCitaSchema = CreateCitaSchema.partial().extend({
   estado: CitaEstado.optional(),
 });
@@ -48,19 +40,43 @@ export interface CitaRow {
   notas: string | null;
   fecha_creacion: Date;
   fecha_actualizacion: Date;
+  // Campos extraídos del JOIN
+  paciente_nombre?: string;
+  paciente_primer_apellido?: string;
+  paciente_segundo_apellido?: string;
+  servicio_nombre?: string;
+  podologo_nombre?: string;
+  podologo_primer_apellido?: string;
+  podologo_segundo_apellido?: string;
 }
 
 // ==========================================
-// 3. CAPA DE DOMINIO PURA (Angular)
+// 3. CAPA DE DOMINIO PURA (Angular - DTO Enriquecido)
 // ==========================================
 export interface CitaEntity {
   id: string;
   clinicaId: string;
-  pacienteId: string;
-  podologoId: string;
-  servicioId: string | null;
-  fechaProgramada: string; // Enviamos string limpio a Angular
-  horaProgramada: string;  // Enviamos string limpio a Angular
+  // Reemplazamos los IDs planos por objetos anidados
+  paciente: {
+    id: string;
+    nombre: string;
+    primerApellido: string;
+    segundoApellido: string | null;
+    nombreCompleto: string; 
+  };
+  podologo: {
+    id: string;
+    nombre: string;
+    primerApellido: string;
+    segundoApellido: string | null;
+    nombreCompleto: string;
+  };
+  servicio: {
+    id: string;
+    nombre: string;
+  } | null;
+  fechaProgramada: string; 
+  horaProgramada: string;  
   duracionMinutos: number;
   estado: EstadoCita;
   notas: string | null;
@@ -72,28 +88,43 @@ export interface CitaEntity {
 // 4. MAPPER
 // ==========================================
 export const mapCitaRowToEntity = (row: CitaRow): CitaEntity => {
-  // MySQL a veces devuelve fechas y horas en formatos extraños dependiendo del driver,
-  // aquí lo limpiamos para que el Frontend lo reciba perfecto.
-  
   let fechaLimpia = '';
   if (row.fecha_programada instanceof Date) {
     fechaLimpia = row.fecha_programada.toISOString().substring(0, 10);
   } else {
-    // Si ya es un string (ej. "2026-04-01T00:00:00.000Z"), lo cortamos
     fechaLimpia = typeof row.fecha_programada === 'string' 
       ? row.fecha_programada.substring(0, 10) 
       : String(row.fecha_programada);
   }
 
-  // Si la hora viene como "14:30:00", la cortamos a "14:30" para estandarizar
   const horaLimpia = row.hora_programada.substring(0, 5);
+
+  // Construir nombres completos
+  const pacienteNombreCompleto = [row.paciente_nombre, row.paciente_primer_apellido, row.paciente_segundo_apellido].filter(Boolean).join(' ');
+  const podologoNombreCompleto = [row.podologo_nombre, row.podologo_primer_apellido, row.podologo_segundo_apellido].filter(Boolean).join(' ');
 
   return {
     id: row.id,
     clinicaId: row.clinica_id,
-    pacienteId: row.paciente_id,
-    podologoId: row.podologo_id,
-    servicioId: row.servicio_id,
+    // Estructuras anidadas listas para el Frontend
+    paciente: {
+      id: row.paciente_id,
+      nombre: row.paciente_nombre || 'Desconocido',
+      primerApellido: row.paciente_primer_apellido || 'Desconocido',
+      segundoApellido: row.paciente_segundo_apellido || null,
+      nombreCompleto: pacienteNombreCompleto || 'Desconocido'
+    },
+    podologo: {
+      id: row.podologo_id,
+      nombre: row.podologo_nombre || 'Desconocido',
+      primerApellido: row.podologo_primer_apellido || 'Desconocido',
+      segundoApellido: row.podologo_segundo_apellido || null,
+      nombreCompleto: podologoNombreCompleto || 'Desconocido'
+    },
+    servicio: row.servicio_id ? {
+      id: row.servicio_id,
+      nombre: row.servicio_nombre || 'Desconocido'
+    } : null,
     fechaProgramada: fechaLimpia,
     horaProgramada: horaLimpia,
     duracionMinutos: row.duracion_minutos,

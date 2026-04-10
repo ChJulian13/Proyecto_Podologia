@@ -3,11 +3,23 @@ import type { CitaRow, EstadoCita } from '../../domain/cita/cita.domain.js';
 
 export class CitaRepository {
   
+  private selectQuery = `
+    SELECT 
+      c.*,
+      p.nombre AS paciente_nombre, p.primer_apellido AS paciente_primer_apellido, p.segundo_apellido AS paciente_segundo_apellido,
+      s.nombre AS servicio_nombre,
+      u.nombre AS podologo_nombre, u.primer_apellido AS podologo_primer_apellido, u.segundo_apellido AS podologo_segundo_apellido
+    FROM citas c
+    INNER JOIN pacientes p ON c.paciente_id = p.id
+    INNER JOIN usuarios u ON c.podologo_id = u.id
+    LEFT JOIN servicios s ON c.servicio_id = s.id
+  `;
+
   async findAllByClinica(clinicaId: string): Promise<CitaRow[]> {
     const [rows] = await pool.execute<any[]>(
-      `SELECT * FROM citas 
-       WHERE clinica_id = ? 
-       ORDER BY fecha_programada DESC, hora_programada DESC`,
+      `${this.selectQuery} 
+       WHERE c.clinica_id = ? 
+       ORDER BY c.fecha_programada DESC, c.hora_programada DESC`,
       [clinicaId]
     );
     return rows;
@@ -15,13 +27,13 @@ export class CitaRepository {
 
   async findById(id: string): Promise<CitaRow | null> {
     const [rows] = await pool.execute<any[]>(
-      'SELECT * FROM citas WHERE id = ? LIMIT 1',
+      `${this.selectQuery} WHERE c.id = ? LIMIT 1`,
       [id]
     );
     return rows[0] ?? null;
   }
 
-  // Buscar choques de horario
+  // Buscar choques de horario (No requiere JOIN, funciona igual)
   async findConflict(podologoId: string, fecha: string, hora: string, ignorarCitaId?: string): Promise<CitaRow | null> {
     let query = `
       SELECT * FROM citas 
@@ -32,7 +44,6 @@ export class CitaRepository {
     `;
     const params: any[] = [podologoId, fecha, hora];
 
-    // Si estamos actualizando una cita, ignoramos su propio ID para que no marque conflicto consigo misma
     if (ignorarCitaId) {
       query += ` AND id != ?`;
       params.push(ignorarCitaId);
