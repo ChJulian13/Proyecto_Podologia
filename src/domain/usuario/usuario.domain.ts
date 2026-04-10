@@ -1,27 +1,21 @@
 import { z } from 'zod';
 
 // ==========================================
-// 1. CAPA DE VALIDACIÓN (DTOs)
+// 1. CAPA DE VALIDACIÓN (DTOs) - Se mantiene igual
 // ==========================================
-
-// Enum estricto de Zod para los roles 
 export const UsuarioRol = z.enum(['ADMINISTRADOR', 'PODOLOGO', 'RECEPCIONISTA']);
 export type RolUsuario = z.infer<typeof UsuarioRol>;
 
-// DTO para Creación (Registro de empleado)
 export const CreateUsuarioSchema = z.object({
   clinica_id: z.string().uuid("El ID de la clínica debe ser un UUID válido"),
   correo: z.string().email("Formato de correo inválido"),
-  // Pedimos la contraseña en texto plano, el Servicio se encargará de encriptarla
   contrasena: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"), 
   nombre: z.string().min(2, "El nombre es muy corto"),
   primer_apellido: z.string().min(2, "El primer apellido es obligatorio"),
-  segundo_apellido: z.string().optional(), // Es opcional
+  segundo_apellido: z.string().optional(),
   rol: UsuarioRol.default('RECEPCIONISTA'),
 });
 
-// DTO para Actualización 
-// Nota: Por seguridad, la contraseña y la clínica no se suelen actualizar por este endpoint general
 export const UpdateUsuarioSchema = z.object({
   correo: z.string().email("Formato de correo inválido").optional(),
   nombre: z.string().min(2).optional(),
@@ -33,56 +27,60 @@ export const UpdateUsuarioSchema = z.object({
 export type CreateUsuarioDTO = z.infer<typeof CreateUsuarioSchema>;
 export type UpdateUsuarioDTO = z.infer<typeof UpdateUsuarioSchema>;
 
-
 // ==========================================
-// 2. CAPA DE INFRAESTRUCTURA / PERSISTENCIA
+// 2. CAPA DE INFRAESTRUCTURA (MySQL)
 // ==========================================
-
-// Fila cruda como la escupe MySQL
 export interface UsuarioRow {
   id: string;
   clinica_id: string;
   correo: string;
-  contrasena_hash: string; // Dato súper sensible
+  contrasena_hash: string;
   nombre: string;
   primer_apellido: string;
   segundo_apellido: string | null;
   rol: RolUsuario;
   esta_activo: number; 
   fecha_creacion: Date;
+  // Campo extraído del JOIN
+  clinica_nombre?: string;
 }
 
-
 // ==========================================
-// 3. CAPA DE DOMINIO PURA (Entidades)
+// 3. CAPA DE DOMINIO PURA (Angular - DTO Enriquecido)
 // ==========================================
-
-// La entidad que viaja por la app 
 export interface UsuarioEntity {
   id: string;
-  clinicaId: string; // Convertimos snake_case a camelCase para JS/TS
+  clinica: {
+    id: string;
+    nombre: string;
+  };
   correo: string;
   nombre: string;
   primerApellido: string;
   segundoApellido: string | null;
+  nombreCompleto: string; // Para visualización inmediata en el header o tablas
   rol: RolUsuario;
   estaActivo: boolean;
   fechaCreacion: Date;
 }
 
-
 // ==========================================
-// 4. MAPPERS (Transformadores)
+// 4. MAPPER
 // ==========================================
-
 export const mapUsuarioRowToEntity = (row: UsuarioRow): UsuarioEntity => {
+  const nombreCompleto = [row.nombre, row.primer_apellido, row.segundo_apellido].filter(Boolean).join(' ');
+
   return {
     id: row.id,
-    clinicaId: row.clinica_id,
+    clinica: {
+      id: row.clinica_id,
+      nombre: row.clinica_nombre || 'Clínica Desconocida'
+    },
     correo: row.correo,
     nombre: row.nombre,
     primerApellido: row.primer_apellido,
     segundoApellido: row.segundo_apellido,
+    nombreCompleto: nombreCompleto,
     rol: row.rol,
     estaActivo: row.esta_activo === 1,
     fechaCreacion: row.fecha_creacion,
