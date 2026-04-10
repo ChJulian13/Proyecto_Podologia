@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { NotaClinicaRepository } from '../../repositories/nota_clinica/nota_clinica.js';
+import { NotaClinicaRepository } from '../../repositories/nota_clinica/nota_clinica.repositories.js';
 import { PacienteRepository } from '../../repositories/paciente/paciente.repositories.js';
 import { UsuarioRepository } from '../../repositories/usuario/usuario.repositore.js';
 import { CitaRepository } from '../../repositories/cita/cita.repositories.js';
