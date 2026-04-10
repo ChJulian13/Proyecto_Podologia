@@ -35,14 +35,20 @@ export interface PacienteRow {
   
   esta_activo: number;
   fecha_creacion: Date;
+
+  clinica_nombre?: string;
 }
 
 export interface PacienteEntity {
   id: string;
-  clinicaId: string;
+  clinica: {
+    id: string;
+    nombre: string;
+  };
   nombre: string;
   primerApellido: string;
   segundoApellido: string | null;
+  nombreCompleto: string;
   telefono: string;
   correo: string | null;
   fechaNacimiento: string | null;
@@ -55,12 +61,17 @@ export interface PacienteEntity {
 }
 
 export const mapPacienteRowToEntity = (row: PacienteRow): PacienteEntity => {
+  const nombreCompleto = [row.nombre, row.primer_apellido, row.segundo_apellido].filter(Boolean).join(' ');
   return {
     id: row.id,
-    clinicaId: row.clinica_id,
+    clinica: {
+      id: row.clinica_id,
+      nombre: row.clinica_nombre || 'Clínica Desconocida'
+    },
     nombre: row.nombre,
     primerApellido: row.primer_apellido,
     segundoApellido: row.segundo_apellido,
+    nombreCompleto: nombreCompleto,
     telefono: row.telefono,
     correo: row.correo,
     fechaNacimiento: row.fecha_nacimiento ? new Date(row.fecha_nacimiento).toISOString().substring(0, 10) : null,

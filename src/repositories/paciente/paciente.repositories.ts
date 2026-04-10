@@ -3,11 +3,19 @@ import type { PacienteRow } from '../../domain/paciente/paciente.domain.js';
 
 export class PacienteRepository {
   
+  private selectQuery = `
+    SELECT 
+      p.*, 
+      cl.nombre AS clinica_nombre 
+    FROM pacientes p
+    INNER JOIN clinicas cl ON p.clinica_id = cl.id
+  `;
+
   async findAllByClinica(clinicaId: string): Promise<PacienteRow[]> {
     const [rows] = await pool.execute<any[]>(
-      `SELECT * FROM pacientes 
-       WHERE clinica_id = ? AND esta_activo = 1 
-       ORDER BY primer_apellido ASC, nombre ASC`,
+      `${this.selectQuery} 
+       WHERE p.clinica_id = ? AND p.esta_activo = 1 
+       ORDER BY p.primer_apellido ASC, p.nombre ASC`,
       [clinicaId]
     );
     return rows;
@@ -15,7 +23,7 @@ export class PacienteRepository {
 
   async findById(id: string): Promise<PacienteRow | null> {
     const [rows] = await pool.execute<any[]>(
-      'SELECT * FROM pacientes WHERE id = ? LIMIT 1',
+      `${this.selectQuery} WHERE p.id = ? LIMIT 1`,
       [id]
     );
     return rows[0] ?? null;
