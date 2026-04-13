@@ -1100,6 +1100,62 @@ paths:
       responses:
         '201':
           description: Nota clínica guardada exitosamente.
+  
+  /api/notas-clinicas/cita/{citaId}:
+    get:
+      summary: Obtener la nota clínica asociada a una cita
+      description: Retorna la nota clínica si la cita ya fue atendida. Si retorna 404, significa que es una cita nueva y el formulario debe abrirse en modo Creación.
+      tags:
+        - Notas Clínicas
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: citaId
+          required: true
+          description: UUID de la cita
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Nota clínica obtenida correctamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/NotaClinicaEntity'
+        '404':
+          description: No hay nota clínica para esta cita.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'No hay nota clínica para esta cita'
+        '400':
+          description: El ID de la cita es inválido.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'El ID de la cita es inválido'
 
   /api/notas-clinicas/{id}:
     patch:

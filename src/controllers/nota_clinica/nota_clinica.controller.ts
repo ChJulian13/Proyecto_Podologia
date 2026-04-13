@@ -84,4 +84,27 @@ export class NotaClinicaController {
       res.status(500).json({ success: false, message: 'Error al actualizar la nota clínica' });
     }
   };
+
+  getByCita = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { citaId } = req.params;
+
+      if (!citaId || typeof citaId !== 'string') {
+        res.status(400).json({ success: false, message: 'El ID de la cita es inválido' });
+        return;
+      }
+
+      const nota = await this.notaService.getByCitaId(citaId);
+      
+      if (!nota) {
+        // Un 404 limpio y esperado por el frontend para saber que debe crear una nueva
+        res.status(404).json({ success: false, message: 'No hay nota clínica para esta cita' });
+        return;
+      }
+
+      res.status(200).json({ success: true, data: nota });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: 'Error interno al obtener la nota por cita' });
+    }
+  };
 }

@@ -6,6 +6,7 @@ const router = Router();
 const notaController = new NotaClinicaController();
 
 router.get('/paciente/:pacienteId', verificarToken, notaController.getHistorial);
+router.get('/cita/:citaId', verificarToken, notaController.getByCita);
 
 router.post('/', verificarToken, notaController.create);
 router.patch('/:id', verificarToken, notaController.update);
