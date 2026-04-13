@@ -67,4 +67,12 @@ export class NotaClinicaRepository {
       [notas, diagnostico, tratamiento, id]
     );
   }
+
+  async findByCitaId(citaId: string): Promise<NotaClinicaRow | null> {
+    const [rows] = await pool.execute<any[]>(
+      `${this.selectQuery} WHERE nc.cita_id = ? LIMIT 1`,
+      [citaId]
+    );
+    return rows[0] ?? null;
+  }
 }
