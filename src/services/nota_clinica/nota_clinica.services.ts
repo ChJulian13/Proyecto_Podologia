@@ -72,4 +72,10 @@ export class NotaClinicaService {
     await this.notaRepository.update(id, newNotas, newDiagnostico, newTratamiento);
     return await this.getById(id);
   }
+
+  async getByCitaId(citaId: string): Promise<NotaClinicaEntity | null> {
+    const row = await this.notaRepository.findByCitaId(citaId);
+    if (!row) return null; // Retornamos null para que el controlador decida qué hacer
+    return mapNotaClinicaRowToEntity(row);
+  }
 }
