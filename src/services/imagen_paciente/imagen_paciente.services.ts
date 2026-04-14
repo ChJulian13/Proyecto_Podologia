@@ -72,4 +72,9 @@ export class ImagenPacienteService {
       fs.unlinkSync(filePath);
     }
   }
+
+  async getByNotaClinica(notaClinicaId: string): Promise<ImagenPacienteEntity[]> {
+    const rows = await this.imagenRepository.findByNotaClinicaId(notaClinicaId);
+    return rows.map(mapImagenRowToEntity);
+  }
 }

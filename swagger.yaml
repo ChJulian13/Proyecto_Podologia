@@ -971,6 +971,49 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/ImagenPacienteEntity'
+  /api/imagenes-paciente/nota-clinica/{notaClinicaId}:
+    get:
+      summary: Obtener las imágenes asociadas a una nota clínica específica
+      tags:
+        - Imágenes Paciente
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: notaClinicaId
+          required: true
+          description: UUID de la nota clínica
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Imágenes de la nota obtenidas correctamente. Retorna un array vacío [] si no hay evidencia.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ImagenPacienteEntity'
+        '400':
+          description: El ID de la nota clínica es inválido.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'El ID de la nota clínica es inválido'
 
   /api/imagenes-paciente:
     post:

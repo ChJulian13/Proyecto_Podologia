@@ -8,6 +8,8 @@ const imagenController = new ImagenPacienteController();
 
 // Consulta y Borrado solo requieren el Token
 router.get('/paciente/:pacienteId', verificarToken, imagenController.getByPaciente);
+router.get('/nota-clinica/:notaClinicaId', verificarToken, imagenController.getByNotaClinica);
+
 router.delete('/:id', verificarToken, imagenController.delete);
 
 // Subida: Requiere Token Y pasar por el middleware de Multer

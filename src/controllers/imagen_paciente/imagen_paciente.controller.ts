@@ -80,4 +80,21 @@ export class ImagenPacienteController {
       res.status(500).json({ success: false, message: 'Error al eliminar la imagen' });
     }
   };
+
+  getByNotaClinica = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { notaClinicaId } = req.params;
+
+      if (!notaClinicaId || typeof notaClinicaId !== 'string') {
+        res.status(400).json({ success: false, message: 'El ID de la nota clínica es inválido' });
+        return;
+      }
+
+      // Traemos solo el array de imágenes de esta consulta (puede estar vacío [])
+      const imagenes = await this.imagenService.getByNotaClinica(notaClinicaId);
+      res.status(200).json({ success: true, data: imagenes });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Error interno al obtener las imágenes de la nota clínica' });
+    }
+  };
 }
