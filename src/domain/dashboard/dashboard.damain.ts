@@ -1,15 +1,11 @@
 // ==========================================
-// 1. CAPA DE INFRAESTRUCTURA (MySQL Views)
+// 1. CAPA DE INFRAESTRUCTURA (MySQL Rows)
 // ==========================================
-export interface CitaHoyRow {
-  id: string;
-  hora_programada: string;
-  estado: string;
-  nombre_paciente: string;
-  telefono_paciente: string;
-  nombre_podologo: string;
-  nombre_servicio: string | null;
-  notas: string | null;
+export interface ResumenHoyRow {
+  totalCitasHoy: number;
+  citasCompletadas: number;
+  citasCanceladas: number;
+  ingresosEsperadosHoy: number;
 }
 
 export interface CitaProximaRow {
@@ -22,18 +18,20 @@ export interface CitaProximaRow {
   nombre_servicio: string | null;
 }
 
+export interface AlertaNotaRow {
+  cita_id: string;
+  fecha_programada: Date;
+  nombre_paciente: string;
+}
+
 // ==========================================
 // 2. CAPA DE DOMINIO PURA (Angular)
 // ==========================================
-export interface CitaHoyEntity {
-  id: string;
-  horaProgramada: string;
-  estado: string;
-  nombrePaciente: string;
-  telefonoPaciente: string;
-  nombrePodologo: string;
-  nombreServicio: string | null;
-  notas: string | null;
+export interface ResumenHoyEntity {
+  totalCitas: number;
+  completadas: number;
+  canceladas: number;
+  ingresosEsperados: number;
 }
 
 export interface CitaProximaEntity {
@@ -46,18 +44,20 @@ export interface CitaProximaEntity {
   nombreServicio: string | null;
 }
 
+export interface AlertaNotaEntity {
+  citaId: string;
+  fechaProgramada: Date;
+  nombrePaciente: string;
+}
+
 // ==========================================
 // 3. MAPPERS
 // ==========================================
-export const mapCitaHoyRowToEntity = (row: CitaHoyRow): CitaHoyEntity => ({
-  id: row.id,
-  horaProgramada: row.hora_programada,
-  estado: row.estado,
-  nombrePaciente: row.nombre_paciente,
-  telefonoPaciente: row.telefono_paciente,
-  nombrePodologo: row.nombre_podologo,
-  nombreServicio: row.nombre_servicio,
-  notas: row.notas,
+export const mapResumenToEntity = (row: ResumenHoyRow): ResumenHoyEntity => ({
+  totalCitas: Number(row.totalCitasHoy),
+  completadas: Number(row.citasCompletadas),
+  canceladas: Number(row.citasCanceladas),
+  ingresosEsperados: Number(row.ingresosEsperadosHoy),
 });
 
 export const mapCitaProximaRowToEntity = (row: CitaProximaRow): CitaProximaEntity => ({
@@ -68,4 +68,10 @@ export const mapCitaProximaRowToEntity = (row: CitaProximaRow): CitaProximaEntit
   nombrePaciente: row.nombre_paciente,
   nombrePodologo: row.nombre_podologo,
   nombreServicio: row.nombre_servicio,
+});
+
+export const mapAlertaNotaToEntity = (row: AlertaNotaRow): AlertaNotaEntity => ({
+  citaId: row.cita_id,
+  fechaProgramada: row.fecha_programada,
+  nombrePaciente: row.nombre_paciente,
 });
