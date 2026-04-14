@@ -55,4 +55,58 @@ export class DashboardController {
       res.status(500).json({ success: false, message: 'Error al cargar las alertas de notas' });
     }
   };
+
+  getIngresos = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      if (!req.usuario) return; // Middleware ya manejó el 401
+      const { clinicaId } = req.usuario;
+      const { fechaInicio, fechaFin } = req.query;
+
+      if (typeof fechaInicio !== 'string' || typeof fechaFin !== 'string') {
+        res.status(400).json({ success: false, message: 'Faltan parámetros fechaInicio o fechaFin' });
+        return;
+      }
+
+      const ingresos = await this.dashboardService.getIngresos(clinicaId, fechaInicio, fechaFin);
+      res.status(200).json({ success: true, data: ingresos });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Error al cargar los ingresos' });
+    }
+  };
+
+  getServiciosPopulares = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      if (!req.usuario) return;
+      const { clinicaId } = req.usuario;
+      const { fechaInicio, fechaFin } = req.query;
+
+      if (typeof fechaInicio !== 'string' || typeof fechaFin !== 'string') {
+        res.status(400).json({ success: false, message: 'Faltan parámetros fechaInicio o fechaFin' });
+        return;
+      }
+
+      const servicios = await this.dashboardService.getServiciosPopulares(clinicaId, fechaInicio, fechaFin);
+      res.status(200).json({ success: true, data: servicios });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Error al cargar servicios populares' });
+    }
+  };
+
+  getTasaAsistencia = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      if (!req.usuario) return;
+      const { clinicaId } = req.usuario;
+      const { fechaInicio, fechaFin } = req.query;
+
+      if (typeof fechaInicio !== 'string' || typeof fechaFin !== 'string') {
+        res.status(400).json({ success: false, message: 'Faltan parámetros fechaInicio o fechaFin' });
+        return;
+      }
+
+      const tasas = await this.dashboardService.getTasaAsistencia(clinicaId, fechaInicio, fechaFin);
+      res.status(200).json({ success: true, data: tasas });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Error al cargar la tasa de asistencia' });
+    }
+  };
 }
