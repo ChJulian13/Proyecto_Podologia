@@ -8,5 +8,9 @@ const dashboardController = new DashboardController();
 router.get('/resumen-hoy', verificarToken, dashboardController.getResumenHoy);
 router.get('/citas-proximas', verificarToken, dashboardController.getCitasProximas);
 router.get('/alertas-notas', verificarToken, dashboardController.getAlertasNotas);
+// --- Rutas de Finanzas y Rendimiento ---
+router.get('/ingresos', verificarToken, dashboardController.getIngresos);
+router.get('/servicios-populares', verificarToken, dashboardController.getServiciosPopulares);
+router.get('/tasa-asistencia', verificarToken, dashboardController.getTasaAsistencia);
 
 export default router;
