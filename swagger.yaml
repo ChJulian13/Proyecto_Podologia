@@ -804,29 +804,136 @@ paths:
           description: CLINICA_NOT_FOUND - La clínica no existe.
 
   # --- DASHBOARD ---
-  /api/dashboard/citas-hoy:
+  # --- DASHBOARD ---
+  /api/dashboard/resumen-hoy:
     get:
-      summary: Obtener citas programadas para el día actual
+      summary: Obtener los KPIs y el resumen de la operación del día actual
+      description: Extrae el clinica_id y el rol del token. Si es podólogo, solo muestra sus propias métricas. Retorna totales de citas e ingresos esperados.
       tags:
         - Dashboard
       security:
         - cookieAuth: []
       responses:
         '200':
-          description: Lista de citas obtenida.
+          description: Resumen obtenido correctamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      totalCitas:
+                        type: integer
+                        example: 12
+                      completadas:
+                        type: integer
+                        example: 5
+                      canceladas:
+                        type: integer
+                        example: 1
+                      ingresosEsperados:
+                        type: number
+                        format: float
+                        example: 2500.50
         '401':
-          description: No autorizado.
+          description: No autorizado. Sesión inválida o expirada.
+        '500':
+          description: Error interno al cargar el resumen del día.
 
   /api/dashboard/citas-proximas:
     get:
-      summary: Obtener citas programadas para fechas futuras
+      summary: Obtener las próximas citas programadas (Timeline)
+      description: Retorna un máximo de 10 citas a partir de la hora actual. Filtra automáticamente por la clínica y el usuario autenticado (si es podólogo).
       tags:
         - Dashboard
       security:
         - cookieAuth: []
       responses:
         '200':
-          description: Lista de citas futuras obtenida.
+          description: Lista de próximas citas obtenida correctamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        fechaProgramada:
+                          type: string
+                          format: date
+                          example: "2026-04-14"
+                        horaProgramada:
+                          type: string
+                          example: "14:30:00"
+                        estado:
+                          type: string
+                          example: "PROGRAMADA"
+                        nombrePaciente:
+                          type: string
+                          example: "Guadalupe Jimenez Trigos"
+                        nombrePodologo:
+                          type: string
+                          example: "Juan Sanchez"
+                        nombreServicio:
+                          type: string
+                          example: "Análisis de la Pisada"
+        '401':
+          description: No autorizado. Sesión inválida o expirada.
+        '500':
+          description: Error interno al cargar las próximas citas.
+
+  /api/dashboard/alertas-notas:
+    get:
+      summary: Obtener alertas de citas completadas sin nota clínica
+      description: Endpoint de control de calidad médico. Retorna las últimas 10 citas en estado COMPLETADA que el podólogo olvidó documentar.
+      tags:
+        - Dashboard
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Lista de alertas obtenida correctamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        citaId:
+                          type: string
+                          format: uuid
+                        fechaProgramada:
+                          type: string
+                          format: date
+                          example: "2026-04-14"
+                        nombrePaciente:
+                          type: string
+                          example: "Paola Gonzalez Taramara"
+        '401':
+          description: No autorizado. Sesión inválida o expirada.
+        '500':
+          description: Error interno al cargar las alertas de notas.
 
   # --- FACTURAS ---
   /api/facturas/cita/{citaId}:
