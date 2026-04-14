@@ -1,5 +1,5 @@
 import { pool } from '../../config/database.js';
-import type { CitaProximaRow, ResumenHoyRow, AlertaNotaRow } from '../../domain/dashboard/dashboard.damain.js';
+import type { CitaProximaRow, ResumenHoyRow, AlertaNotaRow, IngresoRow, ServicioPopularRow, TasaAsistenciaRow } from '../../domain/dashboard/dashboard.damain.js';
 
 export class DashboardRepository {
   
@@ -76,6 +76,50 @@ export class DashboardRepository {
     query += ` ORDER BY c.fecha_programada DESC LIMIT 10`;
 
     const [rows] = await pool.execute<any[]>(query, params);
+    return rows;
+  }
+
+  async getIngresos(clinicaId: string, fechaInicio: string, fechaFin: string): Promise<IngresoRow[]> {
+    const query = `
+      SELECT 
+        fecha_emision,
+        COALESCE(SUM(CASE WHEN estado_pago = 'PAGADO' THEN monto ELSE 0 END), 0) AS totalPagado,
+        COALESCE(SUM(CASE WHEN estado_pago = 'PENDIENTE' THEN monto ELSE 0 END), 0) AS totalPendiente
+      FROM facturas
+      WHERE clinica_id = ? AND fecha_emision BETWEEN ? AND ?
+      GROUP BY fecha_emision
+      ORDER BY fecha_emision ASC
+    `;
+    const [rows] = await pool.execute<any[]>(query, [clinicaId, fechaInicio, fechaFin]);
+    return rows;
+  }
+
+  async getServiciosPopulares(clinicaId: string, fechaInicio: string, fechaFin: string): Promise<ServicioPopularRow[]> {
+    const query = `
+      SELECT 
+        s.nombre AS nombre_servicio, 
+        COUNT(c.id) AS cantidad_realizada
+      FROM citas c
+      JOIN servicios s ON c.servicio_id = s.id
+      WHERE c.clinica_id = ? 
+        AND c.fecha_programada BETWEEN ? AND ?
+        AND c.estado = 'COMPLETADA'
+      GROUP BY s.id, s.nombre
+      ORDER BY cantidad_realizada DESC
+      LIMIT 10
+    `;
+    const [rows] = await pool.execute<any[]>(query, [clinicaId, fechaInicio, fechaFin]);
+    return rows;
+  }
+
+  async getTasaAsistencia(clinicaId: string, fechaInicio: string, fechaFin: string): Promise<TasaAsistenciaRow[]> {
+    const query = `
+      SELECT estado, COUNT(id) AS cantidad
+      FROM citas
+      WHERE clinica_id = ? AND fecha_programada BETWEEN ? AND ?
+      GROUP BY estado
+    `;
+    const [rows] = await pool.execute<any[]>(query, [clinicaId, fechaInicio, fechaFin]);
     return rows;
   }
 }
