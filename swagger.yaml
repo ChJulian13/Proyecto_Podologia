@@ -804,7 +804,6 @@ paths:
           description: CLINICA_NOT_FOUND - La clínica no existe.
 
   # --- DASHBOARD ---
-  # --- DASHBOARD ---
   /api/dashboard/resumen-hoy:
     get:
       summary: Obtener los KPIs y el resumen de la operación del día actual
@@ -934,6 +933,113 @@ paths:
           description: No autorizado. Sesión inválida o expirada.
         '500':
           description: Error interno al cargar las alertas de notas.
+  # --- DASHBOARD: FINANZAS Y RENDIMIENTO ---
+  /api/dashboard/ingresos:
+    get:
+      summary: Obtener reporte de ingresos (Pagado vs Pendiente)
+      tags:
+        - Dashboard
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: query
+          name: fechaInicio
+          required: true
+          schema:
+            type: string
+            format: date
+          example: "2026-04-01"
+        - in: query
+          name: fechaFin
+          required: true
+          schema:
+            type: string
+            format: date
+          example: "2026-04-30"
+      responses:
+        '200':
+          description: Datos de ingresos obtenidos por día.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/IngresoEntity'
+
+  /api/dashboard/servicios-populares:
+    get:
+      summary: Listado de los 10 servicios más solicitados
+      tags:
+        - Dashboard
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: query
+          name: fechaInicio
+          required: true
+          schema:
+            type: string
+          example: "2026-04-01"
+        - in: query
+          name: fechaFin
+          required: true
+          schema:
+            type: string
+          example: "2026-04-30"
+      responses:
+        '200':
+          description: Ranking de servicios.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ServicioPopularEntity'
+
+  /api/dashboard/tasa-asistencia:
+    get:
+      summary: Métrica de asistencia vs cancelaciones
+      tags:
+        - Dashboard
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: query
+          name: fechaInicio
+          required: true
+          schema:
+            type: string
+          example: "2026-04-01"
+        - in: query
+          name: fechaFin
+          required: true
+          schema:
+            type: string
+          example: "2026-04-30"
+      responses:
+        '200':
+          description: Conteo de citas por estado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TasaAsistenciaEntity'
 
   # --- FACTURAS ---
   /api/facturas/cita/{citaId}:
