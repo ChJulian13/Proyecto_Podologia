@@ -75,3 +75,60 @@ export const mapAlertaNotaToEntity = (row: AlertaNotaRow): AlertaNotaEntity => (
   fechaProgramada: row.fecha_programada,
   nombrePaciente: row.nombre_paciente,
 });
+
+export interface IngresoRow {
+  fecha_emision: Date | string;
+  totalPagado: number;
+  totalPendiente: number;
+}
+
+export interface ServicioPopularRow {
+  nombre_servicio: string;
+  cantidad_realizada: number;
+}
+
+export interface TasaAsistenciaRow {
+  estado: string;
+  cantidad: number;
+}
+
+// --- NUEVAS INTERFACES DE DOMINIO (Finanzas) ---
+export interface IngresoEntity {
+  fechaEmision: string;
+  totalPagado: number;
+  totalPendiente: number;
+}
+
+export interface ServicioPopularEntity {
+  nombreServicio: string;
+  cantidadRealizada: number;
+}
+
+export interface TasaAsistenciaEntity {
+  estado: string;
+  cantidad: number;
+}
+
+// --- NUEVOS MAPPERS ---
+export const mapIngresoToEntity = (row: IngresoRow): IngresoEntity => {
+  // Aseguramos formato YYYY-MM-DD para el frontend
+  const fechaStr = row.fecha_emision instanceof Date 
+    ? row.fecha_emision.toISOString().substring(0, 10) 
+    : String(row.fecha_emision).substring(0, 10);
+
+  return {
+    fechaEmision: fechaStr,
+    totalPagado: Number(row.totalPagado),
+    totalPendiente: Number(row.totalPendiente)
+  };
+};
+
+export const mapServicioPopularToEntity = (row: ServicioPopularRow): ServicioPopularEntity => ({
+  nombreServicio: row.nombre_servicio,
+  cantidadRealizada: Number(row.cantidad_realizada)
+});
+
+export const mapTasaAsistenciaToEntity = (row: TasaAsistenciaRow): TasaAsistenciaEntity => ({
+  estado: row.estado,
+  cantidad: Number(row.cantidad)
+});
