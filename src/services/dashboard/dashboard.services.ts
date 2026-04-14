@@ -1,7 +1,8 @@
 import { DashboardRepository } from '../../repositories/dashboard/dashboard.repositories.js';
 import { 
   mapResumenToEntity, mapCitaProximaRowToEntity, mapAlertaNotaToEntity,
-  type ResumenHoyEntity, type CitaProximaEntity, type AlertaNotaEntity 
+  mapIngresoToEntity, mapServicioPopularToEntity, mapTasaAsistenciaToEntity,
+  type ResumenHoyEntity, type CitaProximaEntity, type AlertaNotaEntity, type IngresoEntity, type ServicioPopularEntity, type TasaAsistenciaEntity
 } from '../../domain/dashboard/dashboard.damain.js';
 
 export class DashboardService {
@@ -20,5 +21,20 @@ export class DashboardService {
   async getAlertasNotas(clinicaId: string, usuarioId: string, rol: string): Promise<AlertaNotaEntity[]> {
     const rows = await this.dashboardRepository.getAlertasNotas(clinicaId, usuarioId, rol);
     return rows.map(mapAlertaNotaToEntity);
+  }
+
+  async getIngresos(clinicaId: string, fechaInicio: string, fechaFin: string): Promise<IngresoEntity[]> {
+    const rows = await this.dashboardRepository.getIngresos(clinicaId, fechaInicio, fechaFin);
+    return rows.map(mapIngresoToEntity);
+  }
+
+  async getServiciosPopulares(clinicaId: string, fechaInicio: string, fechaFin: string): Promise<ServicioPopularEntity[]> {
+    const rows = await this.dashboardRepository.getServiciosPopulares(clinicaId, fechaInicio, fechaFin);
+    return rows.map(mapServicioPopularToEntity);
+  }
+
+  async getTasaAsistencia(clinicaId: string, fechaInicio: string, fechaFin: string): Promise<TasaAsistenciaEntity[]> {
+    const rows = await this.dashboardRepository.getTasaAsistencia(clinicaId, fechaInicio, fechaFin);
+    return rows.map(mapTasaAsistenciaToEntity);
   }
 }
