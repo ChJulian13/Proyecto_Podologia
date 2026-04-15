@@ -454,6 +454,55 @@ components:
         fechaCreacion:
           type: string
           format: date-time
+    IngresoEntity:
+      type: object
+      properties:
+        fechaEmision:
+          type: string
+          format: date
+          example: "2026-04-14"
+        totalPagado:
+          type: number
+          format: float
+          example: 1500.50
+        totalPendiente:
+          type: number
+          format: float
+          example: 300.00
+
+    ServicioPopularEntity:
+      type: object
+      properties:
+        nombreServicio:
+          type: string
+          example: "Análisis de la Pisada"
+        cantidadRealizada:
+          type: integer
+          example: 45
+
+    TasaAsistenciaEntity:
+      type: object
+      properties:
+        estado:
+          type: string
+          example: "COMPLETADA"
+        cantidad:
+          type: integer
+          example: 120
+
+    CrecimientoPacientesEntity:
+      type: object
+      properties:
+        nuevosPacientes:
+          type: integer
+          example: 15
+        periodoAnterior:
+          type: integer
+          example: 10
+        porcentajeCrecimiento:
+          type: number
+          format: float
+          example: 50.00
 
 
 # ==========================================
