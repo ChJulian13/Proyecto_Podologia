@@ -109,4 +109,22 @@ export class DashboardController {
       res.status(500).json({ success: false, message: 'Error al cargar la tasa de asistencia' });
     }
   };
+
+  getNuevosPacientes = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      if (!req.usuario) return;
+      const { clinicaId } = req.usuario;
+      const { fechaInicio, fechaFin } = req.query;
+
+      if (typeof fechaInicio !== 'string' || typeof fechaFin !== 'string') {
+        res.status(400).json({ success: false, message: 'Faltan parámetros de fecha' });
+        return;
+      }
+
+      const crecimiento = await this.dashboardService.getNuevosPacientes(clinicaId, fechaInicio, fechaFin);
+      res.status(200).json({ success: true, data: crecimiento });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Error al calcular crecimiento de pacientes' });
+    }
+  };
 }
