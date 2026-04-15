@@ -12,5 +12,6 @@ router.get('/alertas-notas', verificarToken, dashboardController.getAlertasNotas
 router.get('/ingresos', verificarToken, dashboardController.getIngresos);
 router.get('/servicios-populares', verificarToken, dashboardController.getServiciosPopulares);
 router.get('/tasa-asistencia', verificarToken, dashboardController.getTasaAsistencia);
+router.get('/nuevos-pacientes', verificarToken, dashboardController.getNuevosPacientes);
 
 export default router;

@@ -1040,6 +1040,38 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/TasaAsistenciaEntity'
+  
+  /api/dashboard/nuevos-pacientes:
+    get:
+      summary: Métrica de crecimiento de nuevos pacientes
+      description: Compara el número de pacientes registrados en el rango actual vs el periodo anterior equivalente.
+      tags:
+        - Dashboard
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: query
+          name: fechaInicio
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: fechaFin
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Datos de crecimiento obtenidos.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/CrecimientoPacientesEntity'
 
   # --- FACTURAS ---
   /api/facturas/cita/{citaId}:
