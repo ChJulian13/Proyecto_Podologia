@@ -1,8 +1,8 @@
 import { DashboardRepository } from '../../repositories/dashboard/dashboard.repositories.js';
 import { 
   mapResumenToEntity, mapCitaProximaRowToEntity, mapAlertaNotaToEntity,
-  mapIngresoToEntity, mapServicioPopularToEntity, mapTasaAsistenciaToEntity,
-  type ResumenHoyEntity, type CitaProximaEntity, type AlertaNotaEntity, type IngresoEntity, type ServicioPopularEntity, type TasaAsistenciaEntity
+  mapIngresoToEntity, mapServicioPopularToEntity, mapTasaAsistenciaToEntity, mapCrecimientoToEntity,
+  type ResumenHoyEntity, type CitaProximaEntity, type AlertaNotaEntity, type IngresoEntity, type ServicioPopularEntity, type TasaAsistenciaEntity, type CrecimientoPacientesEntity
 } from '../../domain/dashboard/dashboard.damain.js';
 
 export class DashboardService {
@@ -36,5 +36,10 @@ export class DashboardService {
   async getTasaAsistencia(clinicaId: string, fechaInicio: string, fechaFin: string): Promise<TasaAsistenciaEntity[]> {
     const rows = await this.dashboardRepository.getTasaAsistencia(clinicaId, fechaInicio, fechaFin);
     return rows.map(mapTasaAsistenciaToEntity);
+  }
+
+  async getNuevosPacientes(clinicaId: string, fechaInicio: string, fechaFin: string): Promise<CrecimientoPacientesEntity> {
+    const row = await this.dashboardRepository.getNuevosPacientes(clinicaId, fechaInicio, fechaFin);
+    return mapCrecimientoToEntity(row);
   }
 }
