@@ -1,5 +1,5 @@
 import { pool } from '../../config/database.js';
-import type { CitaProximaRow, ResumenHoyRow, AlertaNotaRow, IngresoRow, ServicioPopularRow, TasaAsistenciaRow } from '../../domain/dashboard/dashboard.damain.js';
+import type { CitaProximaRow, ResumenHoyRow, AlertaNotaRow, IngresoRow, ServicioPopularRow, TasaAsistenciaRow, CrecimientoPacientesRow } from '../../domain/dashboard/dashboard.damain.js';
 
 export class DashboardRepository {
   
@@ -121,5 +121,26 @@ export class DashboardRepository {
     `;
     const [rows] = await pool.execute<any[]>(query, [clinicaId, fechaInicio, fechaFin]);
     return rows;
+  }
+
+  async getNuevosPacientes(clinicaId: string, fechaInicio: string, fechaFin: string): Promise<CrecimientoPacientesRow> {
+    const query = `
+      SELECT 
+        (SELECT COUNT(id) FROM pacientes 
+         WHERE clinica_id = ? AND fecha_creacion BETWEEN ? AND ?) as totalActual,
+        (SELECT COUNT(id) FROM pacientes 
+         WHERE clinica_id = ? AND fecha_creacion BETWEEN 
+           DATE_SUB(?, INTERVAL DATEDIFF(?, ?) + 1 DAY) AND 
+           DATE_SUB(?, INTERVAL 1 DAY)) as totalAnterior
+    `;
+    
+    // El orden de parámetros es vital para que MySQL calcule bien los intervalos
+    const params = [
+      clinicaId, fechaInicio, fechaFin, // Para totalActual
+      clinicaId, fechaInicio, fechaFin, fechaInicio, fechaInicio // Para totalAnterior
+    ];
+
+    const [rows] = await pool.execute<any[]>(query, params);
+    return rows[0];
   }
 }
