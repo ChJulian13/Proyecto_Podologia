@@ -132,3 +132,35 @@ export const mapTasaAsistenciaToEntity = (row: TasaAsistenciaRow): TasaAsistenci
   estado: row.estado,
   cantidad: Number(row.cantidad)
 });
+
+// --- INTERFACES PARA CRECIMIENTO ---
+export interface CrecimientoPacientesRow {
+  totalActual: number;
+  totalAnterior: number;
+}
+
+export interface CrecimientoPacientesEntity {
+  nuevosPacientes: number;
+  periodoAnterior: number;
+  porcentajeCrecimiento: number;
+}
+
+// --- MAPPER ---
+export const mapCrecimientoToEntity = (row: CrecimientoPacientesRow): CrecimientoPacientesEntity => {
+  const actual = Number(row.totalActual);
+  const anterior = Number(row.totalAnterior);
+  
+  // Cálculo de porcentaje: ((A - B) / B) * 100
+  let porcentaje = 0;
+  if (anterior > 0) {
+    porcentaje = ((actual - anterior) / anterior) * 100;
+  } else if (actual > 0) {
+    porcentaje = 100; // Si antes era 0 y ahora hay pacientes, el crecimiento es del 100%
+  }
+
+  return {
+    nuevosPacientes: actual,
+    periodoAnterior: anterior,
+    porcentajeCrecimiento: Number(porcentaje.toFixed(2))
+  };
+};
