@@ -71,4 +71,11 @@ export class UsuarioRepository {
   async softDelete(id: string): Promise<void> {
     await pool.execute('UPDATE usuarios SET esta_activo = 0 WHERE id = ?', [id]);
   }
+
+  async updatePassword(id: string, contrasenaHash: string): Promise<void> {
+    await pool.execute(
+      'UPDATE usuarios SET contrasena_hash = ? WHERE id = ?',
+      [contrasenaHash, id]
+    );
+  }
 }
