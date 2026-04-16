@@ -6,10 +6,16 @@ export class DashboardRepository {
   async getResumenHoy(clinicaId: string, usuarioId: string, rol: string): Promise<ResumenHoyRow> {
     let query = `
       SELECT 
-        COUNT(c.id) AS totalCitasHoy,
-        SUM(CASE WHEN c.estado = 'COMPLETADA' THEN 1 ELSE 0 END) AS citasCompletadas,
-        SUM(CASE WHEN c.estado = 'CANCELADA' THEN 1 ELSE 0 END) AS citasCanceladas,
-        COALESCE(SUM(s.precio), 0) AS ingresosEsperadosHoy
+        -- 1. Total de citas válidas (excluye las canceladas para ver la carga de trabajo real)
+        COUNT(CASE WHEN c.estado != 'CANCELADA' THEN 1 END) AS totalCitasHoy,
+        
+        -- 2. Desglose de estados
+        COUNT(CASE WHEN c.estado = 'COMPLETADA' THEN 1 END) AS citasCompletadas,
+        COUNT(CASE WHEN c.estado = 'CANCELADA' THEN 1 END) AS citasCanceladas,
+        
+        -- 3. Ingresos esperados SOLO de citas válidas (se ignora el precio si está cancelada)
+        COALESCE(SUM(CASE WHEN c.estado != 'CANCELADA' THEN s.precio ELSE 0 END), 0) AS ingresosEsperadosHoy
+        
       FROM citas c
       LEFT JOIN servicios s ON c.servicio_id = s.id
       WHERE c.clinica_id = ? AND c.fecha_programada = CURDATE()
