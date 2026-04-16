@@ -561,6 +561,23 @@ components:
         nombrePaciente:
           type: string
           example: "Paola Gonzalez Taramara"
+    
+    UpdatePasswordRequest:
+      type: object
+      required:
+        - contrasenaActual
+        - nuevaContrasena
+      properties:
+        contrasenaActual:
+          type: string
+          example: "MiPasswordViejo123"
+          description: "La contraseña actual del usuario para autorizar el cambio."
+        nuevaContrasena:
+          type: string
+          format: password
+          minLength: 6
+          example: "MiNuevoPassword456"
+          description: "La nueva contraseña (mínimo 6 caracteres)."
 
 
 # ==========================================
@@ -1907,3 +1924,48 @@ paths:
       responses:
         '200':
           description: Usuario desactivado exitosamente.
+    
+  /api/usuarios/{id}/password:
+    patch:
+      summary: Actualizar la contraseña de un empleado/usuario
+      description: Permite cambiar la contraseña verificando primero que la contraseña actual coincida con la registrada en la base de datos (medida de seguridad).
+      tags:
+        - Usuarios
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID del usuario al que se le cambiará la contraseña
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePasswordRequest'
+      responses:
+        '200':
+          description: Contraseña actualizada exitosamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Contraseña actualizada correctamente"
+        '400':
+          description: Error de validación (Zod) o formato de ID inválido.
+        '401':
+          description: No autorizado. La contraseña actual enviada no coincide con el hash almacenado.
+        '404':
+          description: Usuario no encontrado en la base de datos.
+        '500':
+          description: Error interno al actualizar la contraseña.
