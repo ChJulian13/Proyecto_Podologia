@@ -1,8 +1,8 @@
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import { UsuarioRepository } from '../../repositories/usuario/usuario.repositore.js';
-import { ClinicaRepository } from '../../repositories/clinica/clinica.repositore.js'; // Para verificar que la clínica exista
-import { mapUsuarioRowToEntity, type CreateUsuarioDTO, type UpdateUsuarioDTO, type UsuarioEntity } from '../../domain/usuario/usuario.domain.js';
+import { ClinicaRepository } from '../../repositories/clinica/clinica.repositore.js'; 
+import { mapUsuarioRowToEntity, type CreateUsuarioDTO, type UpdateUsuarioDTO, type UsuarioEntity, type UpdatePasswordDTO } from '../../domain/usuario/usuario.domain.js';
 
 export class UsuarioService {
   private usuarioRepository = new UsuarioRepository();
@@ -73,5 +73,16 @@ export class UsuarioService {
     if (!existing) throw new Error('USUARIO_NOT_FOUND');
 
     await this.usuarioRepository.softDelete(id);
+  }
+
+  async updatePassword(id: string, data: UpdatePasswordDTO): Promise<void> {
+    const existingRow = await this.usuarioRepository.findById(id);
+    if (!existingRow) throw new Error('USUARIO_NOT_FOUND');
+
+    const isMatch = await bcrypt.compare(data.contrasenaActual, existingRow.contrasena_hash);
+    if (!isMatch) throw new Error('CONTRASENA_INCORRECTA');
+
+    const nuevoHash = await bcrypt.hash(data.nuevaContrasena, 10);
+    await this.usuarioRepository.updatePassword(id, nuevoHash);
   }
 }
