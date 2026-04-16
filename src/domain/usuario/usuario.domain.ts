@@ -24,8 +24,14 @@ export const UpdateUsuarioSchema = z.object({
   rol: UsuarioRol.optional(),
 });
 
+export const UpdatePasswordSchema = z.object({
+  contrasenaActual: z.string().min(1, "La contraseña actual es requerida"),
+  nuevaContrasena: z.string().min(6, "La nueva contraseña debe tener al menos 6 caracteres"),
+});
+
 export type CreateUsuarioDTO = z.infer<typeof CreateUsuarioSchema>;
 export type UpdateUsuarioDTO = z.infer<typeof UpdateUsuarioSchema>;
+export type UpdatePasswordDTO = z.infer<typeof UpdatePasswordSchema>;
 
 // ==========================================
 // 2. CAPA DE INFRAESTRUCTURA (MySQL)
