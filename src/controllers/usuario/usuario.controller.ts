@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import { UsuarioService } from '../../services/usuario/usuario.services.js';
-import { CreateUsuarioSchema, UpdateUsuarioSchema } from '../../domain/usuario/usuario.domain.js';
+import { CreateUsuarioSchema, UpdateUsuarioSchema, UpdatePasswordSchema } from '../../domain/usuario/usuario.domain.js';
 
 export class UsuarioController {
   private usuarioService = new UsuarioService();
@@ -99,6 +99,36 @@ export class UsuarioController {
         return;
       }
       res.status(500).json({ success: false, message: 'Error al eliminar el usuario' });
+    }
+  };
+
+  updatePassword = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+
+      if (!id || typeof id !== 'string') {
+        res.status(400).json({ success: false, message: 'El ID proporcionado es inválido' });
+        return;
+      }
+
+      const validatedData = UpdatePasswordSchema.parse(req.body);
+      
+      await this.usuarioService.updatePassword(id, validatedData);
+      res.status(200).json({ success: true, message: 'Contraseña actualizada correctamente' });
+    } catch (error: any) {
+      if (error.name === 'ZodError') {
+        res.status(400).json({ success: false, errors: error.errors });
+        return;
+      }
+      if (error.message === 'USUARIO_NOT_FOUND') {
+        res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+        return;
+      }
+      if (error.message === 'CONTRASENA_INCORRECTA') {
+        res.status(401).json({ success: false, message: 'La contraseña actual es incorrecta' });
+        return;
+      }
+      res.status(500).json({ success: false, message: 'Error al actualizar la contraseña' });
     }
   };
 }
