@@ -63,7 +63,7 @@ export class DashboardRepository {
     let query = `
       SELECT 
         c.id AS cita_id,
-        c.fecha_programada,
+        DATE_FORMAT(c.fecha_programada, '%Y-%m-%d') AS fecha_programada,
         CONCAT_WS(' ', p.nombre, p.primer_apellido, p.segundo_apellido) AS nombre_paciente
       FROM citas c
       JOIN pacientes p ON c.paciente_id = p.id
