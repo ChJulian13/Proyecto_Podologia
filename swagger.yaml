@@ -128,11 +128,33 @@ components:
           example: "contacto@icsquiropodia.com"
         estaActiva:
           type: boolean
-          description: "Mapeado desde el tinyint de MySQL"
+          description: "Mapeado desde el tinyint de MySQL. Indica si el sistema está bloqueado para esta clínica."
           example: true
         fechaCreacion:
           type: string
           format: date-time
+        platformAdminId:
+          type: string
+          format: uuid
+          nullable: true
+        planSuscripcionId:
+          type: string
+          format: uuid
+          nullable: true
+        fechaVencimientoSuscripcion:
+          type: string
+          format: date
+          nullable: true
+          example: "2026-05-20"
+        dominioPersonalizado:
+          type: string
+          nullable: true
+          example: "xalapa-centro"
+        configuracionVisual:
+          type: object
+          additionalProperties: true
+          nullable: true
+          example: { "logo_url": "https://link.com/logo.png", "color_primario": "#FF5733" }
 
     FacturaEntity:
       type: object
@@ -814,7 +836,7 @@ paths:
   # --- CLÍNICAS ---
   /api/clinicas:
     get:
-      summary: Obtener todas las clínicas
+      summary: Obtener todas las clínicas (Activas e Inactivas)
       tags:
         - Clínicas
       security:
@@ -838,7 +860,7 @@ paths:
           description: Error interno del servidor.
 
     post:
-      summary: Crear una nueva clínica
+      summary: Crear una nueva clínica (SaaS)
       tags:
         - Clínicas
       security:
@@ -851,6 +873,7 @@ paths:
               type: object
               required:
                 - nombre
+                - planSuscripcionId
               properties:
                 nombre:
                   type: string
@@ -864,6 +887,26 @@ paths:
                   type: string
                   format: email
                   example: "contacto@icsquiropodia.com"
+                platformAdminId:
+                  type: string
+                  format: uuid
+                  example: "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d"
+                planSuscripcionId:
+                  type: string
+                  format: uuid
+                  example: "f9e8d7c6-b5a4-3c2d-1e0f-a1b2c3d4e5f6"
+                fechaVencimientoSuscripcion:
+                  type: string
+                  format: date
+                  example: "2026-05-20"
+                dominioPersonalizado:
+                  type: string
+                  pattern: '^[a-z0-9-]+$'
+                  example: "xalapa-centro"
+                configuracionVisual:
+                  type: object
+                  additionalProperties: true
+                  example: { "logo_url": "https://link.com/logo.png", "color_primario": "#FF5733" }
       responses:
         '201':
           description: Clínica creada exitosamente.
@@ -874,7 +917,7 @@ paths:
 
   /api/clinicas/{id}:
     patch:
-      summary: Actualizar datos de una clínica
+      summary: Actualizar datos de un contrato/clínica
       tags:
         - Clínicas
       security:
@@ -902,14 +945,27 @@ paths:
                 correo:
                   type: string
                   format: email
+                planSuscripcionId:
+                  type: string
+                  format: uuid
+                fechaVencimientoSuscripcion:
+                  type: string
+                  format: date
+                dominioPersonalizado:
+                  type: string
+                  pattern: '^[a-z0-9-]+$'
+                configuracionVisual:
+                  type: object
+                  additionalProperties: true
       responses:
         '200':
           description: Clínica actualizada correctamente.
         '404':
           description: CLINICA_NOT_FOUND - La clínica no existe.
 
-    delete:
-      summary: Desactivar una clínica (Soft Delete)
+  /api/clinicas/{id}/status:
+    patch:
+      summary: Suspender o Reactivar una clínica (Switch SaaS)
       tags:
         - Clínicas
       security:
@@ -921,11 +977,26 @@ paths:
           schema:
             type: string
             format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - activar
+              properties:
+                activar:
+                  type: boolean
+                  example: false
+                  description: "True para reactivar el servicio, False para suspenderlo por falta de pago o mal uso."
       responses:
         '200':
-          description: Clínica desactivada exitosamente.
+          description: Estado de la clínica modificado exitosamente.
+        '400':
+          description: Faltan parámetros en el cuerpo de la petición.
         '404':
-          description: CLINICA_NOT_FOUND - La clínica no existe.
+          description: CLINICA_NOT_FOUND - La clínica no existe
 
   # --- DASHBOARD ---
   # --- DASHBOARD: OPERACIÓN DIARIA ---
