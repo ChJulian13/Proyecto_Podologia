@@ -44,7 +44,7 @@ swaggerDocs(app, PORT);
 
 // (Opcional) Si el SuperAdmin usa /api/clinicas para registrarlas, ponlo aquí.
 // Si las clínicas lo usan para ver su propia info, ponlo en las protegidas.
-// app.use('/api/clinicas', clinicaRoutes); 
+app.use('/api/clinicas', clinicaRoutes); 
 
 // =========================================================
 // 3. RUTAS PROTEGIDAS (Operación diaria del SaaS)

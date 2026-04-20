@@ -1,76 +1,104 @@
-// src/domain/clinica.domain.ts
 import { z } from 'zod';
 
 // ==========================================
 // 1. CAPA DE VALIDACIÓN (DTOs)
 // ==========================================
 
-// Esquema Base: Define las reglas de negocio para los campos individuales
 const ClinicaBaseSchema = z.object({
   nombre: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
   
-  // Regex: Permite opcionalmente un '+' al inicio, seguido de 7 a 20 números, espacios o guiones
   telefono: z.string().regex(/^\+?[\d\s\-]{7,20}$/, "Formato de teléfono inválido").optional(),
   
-  // Preprocess: Intercepta el dato antes de validarlo. Si es un string vacío, lo convierte a undefined.
   correo: z.preprocess(
     (val) => (val === '' ? undefined : val),
     z.string().email("Formato de correo inválido").optional()
   ),
+
+  // NUEVOS CAMPOS SaaS
+  platformAdminId: z.string().uuid("Formato de ID de administrador inválido").optional(),
+  
+  planSuscripcionId: z.string().uuid("Debe seleccionar un plan de suscripción válido"),
+  
+  // YYYY-MM-DD
+  fechaVencimientoSuscripcion: z.string().optional(), 
+  
+  // Regex: Solo letras minúsculas, números y guiones (ideal para subdominios)
+  dominioPersonalizado: z.string()
+    .min(3, "El dominio debe tener al menos 3 caracteres")
+    .regex(/^[a-z0-9-]+$/, "El dominio solo puede contener letras minúsculas, números y guiones")
+    .optional(),
+    
+  // Acepta cualquier objeto JSON para la configuración visual
+  configuracionVisual: z.record(z.string(), z.any()).optional()
 });
 
-// DTO para Crear (Hereda todo tal cual)
+// DTO para Crear
 export const CreateClinicaSchema = ClinicaBaseSchema;
 
-// DTO para Actualizar (Convierte todos los campos del base a opcionales)
+// DTO para Actualizar (Hacemos todos los campos opcionales)
 export const UpdateClinicaSchema = ClinicaBaseSchema.partial();
 
 export type CreateClinicaDTO = z.infer<typeof CreateClinicaSchema>;
 export type UpdateClinicaDTO = z.infer<typeof UpdateClinicaSchema>;
 
-
 // ==========================================
 // 2. CAPA DE INFRAESTRUCTURA / PERSISTENCIA
 // ==========================================
 
-// Refleja exactamente cómo vienen los datos crudos desde MySQL
 export interface ClinicaRow {
   id: string;
   nombre: string;
   telefono: string | null;
   correo: string | null;
-  esta_activa: number; // MySQL tinyint(1) devuelve 0 o 1
+  esta_activa: number; 
   fecha_creacion: Date;
+  
+  // NUEVOS CAMPOS SaaS (Mapeo directo de MySQL)
+  platform_admin_id: string | null;
+  plan_suscripcion_id: string | null;
+  fecha_vencimiento_suscripcion: Date | string | null;
+  dominio_personalizado: string | null;
+  configuracion_visual: any | null; 
 }
-
 
 // ==========================================
 // 3. CAPA DE DOMINIO PURA (Entidades)
 // ==========================================
 
-// La entidad real del negocio. Agnostica a la base de datos o librerías externas.
 export interface ClinicaEntity {
   id: string;
   nombre: string;
   telefono: string | null;
   correo: string | null;
-  estaActiva: boolean; // El dominio trabaja con booleanos, no con números
+  estaActiva: boolean; 
   fechaCreacion: Date;
+  
+  // NUEVOS CAMPOS SaaS (CamelCase)
+  platformAdminId: string | null;
+  planSuscripcionId: string | null;
+  fechaVencimientoSuscripcion: Date | string | null;
+  dominioPersonalizado: string | null;
+  configuracionVisual: any | null;
 }
-
 
 // ==========================================
 // 4. MAPPERS (Transformadores)
 // ==========================================
 
-// Función vital para aislar la base de datos del resto del sistema
 export const mapClinicaRowToEntity = (row: ClinicaRow): ClinicaEntity => {
   return {
     id: row.id,
     nombre: row.nombre,
     telefono: row.telefono,
     correo: row.correo,
-    estaActiva: row.esta_activa === 1, // Transformación de DB a Dominio
+    estaActiva: row.esta_activa === 1, 
     fechaCreacion: row.fecha_creacion,
+    
+    // Mapeo SaaS
+    platformAdminId: row.platform_admin_id,
+    planSuscripcionId: row.plan_suscripcion_id,
+    fechaVencimientoSuscripcion: row.fecha_vencimiento_suscripcion,
+    dominioPersonalizado: row.dominio_personalizado,
+    configuracionVisual: row.configuracion_visual
   };
 };
