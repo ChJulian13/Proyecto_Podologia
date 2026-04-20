@@ -18,7 +18,7 @@ export class ClinicaController {
     try {
       const validatedData = CreateClinicaSchema.parse(req.body);
       const nuevaClinica = await this.clinicaService.create(validatedData);
-      res.status(201).json({ success: true, message: 'Clínica creada', data: nuevaClinica });
+      res.status(201).json({ success: true, message: 'Clínica creada exitosamente', data: nuevaClinica });
     } catch (error: any) {
       if (error.name === 'ZodError') {
         res.status(400).json({ success: false, errors: error.errors });
@@ -59,23 +59,35 @@ export class ClinicaController {
     }
   };
 
-  delete = async (req: Request, res: Response): Promise<void> => {
+  // NUEVO MÉTODO: Interruptor de Suscripción (SaaS)
+  toggleStatus = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
+      const { activar } = req.body;
 
       if (!id || typeof id !== 'string') {
         res.status(400).json({ success: false, message: 'El ID proporcionado en la URL es inválido' });
         return;
       }
       
-      await this.clinicaService.delete(id);
-      res.status(200).json({ success: true, message: 'Clínica desactivada exitosamente' });
+      if (typeof activar !== 'boolean') {
+        res.status(400).json({ success: false, message: 'Se requiere el campo booleano "activar" en el cuerpo de la petición' });
+        return;
+      }
+      
+      await this.clinicaService.toggleStatus(id, activar);
+      
+      const mensaje = activar 
+        ? 'La clínica ha sido reactivada. El acceso ha sido restaurado.' 
+        : 'La clínica ha sido suspendida. El acceso está bloqueado.';
+        
+      res.status(200).json({ success: true, message: mensaje });
     } catch (error: any) {
       if (error.message === 'CLINICA_NOT_FOUND') {
         res.status(404).json({ success: false, message: 'Clínica no encontrada' });
         return;
       }
-      res.status(500).json({ success: false, message: 'Error al eliminar' });
+      res.status(500).json({ success: false, message: 'Error al cambiar el estado de la clínica' });
     }
   };
 }
