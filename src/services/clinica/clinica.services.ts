@@ -6,7 +6,8 @@ export class ClinicaService {
   private clinicaRepository = new ClinicaRepository();
 
   async getAll(): Promise<ClinicaRow[]> {
-    return await this.clinicaRepository.findAllActivas();
+    // El SuperAdmin ve todas, activas o inactivas
+    return await this.clinicaRepository.findAll(); 
   }
 
   async getById(id: string): Promise<ClinicaRow> {
@@ -16,15 +17,20 @@ export class ClinicaService {
   }
 
   async create(data: CreateClinicaDTO): Promise<ClinicaRow> {
-    // Generamos el UUID V4 nativamente en Node.js
     const newId = crypto.randomUUID(); 
     
-    await this.clinicaRepository.create(
-      newId, 
-      data.nombre, 
-      data.telefono ?? null, 
-      data.correo ?? null
-    );
+    await this.clinicaRepository.create({
+      id: newId,
+      nombre: data.nombre,
+      // Aplicamos el parche ?? null a todos los campos opcionales de Zod
+      telefono: data.telefono ?? null,
+      correo: data.correo ?? null,
+      platform_admin_id: data.platformAdminId ?? null,
+      plan_suscripcion_id: data.planSuscripcionId ?? null,
+      fecha_vencimiento_suscripcion: data.fechaVencimientoSuscripcion ?? null,
+      dominio_personalizado: data.dominioPersonalizado ?? null,
+      configuracion_visual: data.configuracionVisual ?? null
+    });
 
     return await this.getById(newId);
   }
@@ -33,18 +39,26 @@ export class ClinicaService {
     const existing = await this.clinicaRepository.findById(id);
     if (!existing) throw new Error('CLINICA_NOT_FOUND');
 
-    const newNombre = data.nombre ?? existing.nombre;
-    const newTelefono = data.telefono !== undefined ? data.telefono : existing.telefono;
-    const newCorreo = data.correo !== undefined ? data.correo : existing.correo;
-
-    await this.clinicaRepository.update(id, newNombre, newTelefono, newCorreo);
+    await this.clinicaRepository.update(id, {
+      nombre: data.nombre ?? existing.nombre,
+      telefono: data.telefono !== undefined ? data.telefono : existing.telefono,
+      correo: data.correo !== undefined ? data.correo : existing.correo,
+      plan_suscripcion_id: data.planSuscripcionId !== undefined ? data.planSuscripcionId : existing.plan_suscripcion_id,
+      fecha_vencimiento_suscripcion: data.fechaVencimientoSuscripcion !== undefined ? data.fechaVencimientoSuscripcion : existing.fecha_vencimiento_suscripcion,
+      dominio_personalizado: data.dominioPersonalizado !== undefined ? data.dominioPersonalizado : existing.dominio_personalizado,
+      configuracion_visual: data.configuracionVisual !== undefined ? data.configuracionVisual : existing.configuracion_visual,
+      // Conservamos el estado activo si no se pasa uno nuevo en un hipotético campo futuro
+      esta_activa: existing.esta_activa
+    });
+    
     return await this.getById(id);
   }
 
-  async delete(id: string): Promise<void> {
+  // Ahora sirve para apagar (soft delete) y encender clínicas
+  async toggleStatus(id: string, activar: boolean): Promise<void> {
     const existing = await this.clinicaRepository.findById(id);
     if (!existing) throw new Error('CLINICA_NOT_FOUND');
 
-    await this.clinicaRepository.softDelete(id);
+    await this.clinicaRepository.updateStatus(id, activar);
   }
 }
