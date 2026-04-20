@@ -4,8 +4,8 @@ import type { RolUsuario } from '../../domain/usuario/usuario.domain.js';
 
 export interface TokenPayload {
   id: string;
-  clinicaId: string;
-  rol: RolUsuario;
+  clinicaId?: string;
+  rol: RolUsuario | 'SUPER_ADMIN';
 }
 
 export interface AuthRequest extends Request {
