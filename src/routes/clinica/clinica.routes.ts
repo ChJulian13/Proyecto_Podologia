@@ -7,6 +7,6 @@ const clinicaController = new ClinicaController();
 router.get('/',  clinicaController.getAll);
 router.post('/',  clinicaController.create);
 router.patch('/:id',  clinicaController.update);
-router.delete('/:id',  clinicaController.delete);
+router.patch('/:id',  clinicaController.toggleStatus);
 
 export default router;
