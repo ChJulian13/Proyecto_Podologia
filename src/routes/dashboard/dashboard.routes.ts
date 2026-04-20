@@ -1,17 +1,16 @@
 import { Router } from 'express';
 import { DashboardController } from '../../controllers/dashboard/dashboard.controller.js';
-import { verificarToken } from '../../middleware/auth/auth.middleware.js';
 
 const router = Router();
 const dashboardController = new DashboardController();
 
-router.get('/resumen-hoy', verificarToken, dashboardController.getResumenHoy);
-router.get('/citas-proximas', verificarToken, dashboardController.getCitasProximas);
-router.get('/alertas-notas', verificarToken, dashboardController.getAlertasNotas);
+router.get('/resumen-hoy',  dashboardController.getResumenHoy);
+router.get('/citas-proximas',  dashboardController.getCitasProximas);
+router.get('/alertas-notas',  dashboardController.getAlertasNotas);
 // --- Rutas de Finanzas y Rendimiento ---
-router.get('/ingresos', verificarToken, dashboardController.getIngresos);
-router.get('/servicios-populares', verificarToken, dashboardController.getServiciosPopulares);
-router.get('/tasa-asistencia', verificarToken, dashboardController.getTasaAsistencia);
-router.get('/nuevos-pacientes', verificarToken, dashboardController.getNuevosPacientes);
+router.get('/ingresos',  dashboardController.getIngresos);
+router.get('/servicios-populares',  dashboardController.getServiciosPopulares);
+router.get('/tasa-asistencia',  dashboardController.getTasaAsistencia);
+router.get('/nuevos-pacientes',  dashboardController.getNuevosPacientes);
 
 export default router;
