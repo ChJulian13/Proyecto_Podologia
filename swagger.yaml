@@ -2040,3 +2040,42 @@ paths:
           description: Usuario no encontrado en la base de datos.
         '500':
           description: Error interno al actualizar la contraseña.
+          
+  # --- ADMINISTRACIÓN DE PLATAFORMA (SUPER ADMIN) ---
+  /api/platform-admin/login:
+    post:
+      summary: Iniciar sesión como Administrador de Plataforma (SaaS Owner)
+      tags:
+        - Super Admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - correo
+                - contrasena
+              properties:
+                correo:
+                  type: string
+                  format: email
+                  example: "admin@plataforma.com"
+                contrasena:
+                  type: string
+                  format: password
+                  example: "Admin123456"
+      responses:
+        '200':
+          description: Login exitoso. Se emite cookie access_token.
+        '401':
+          description: Credenciales inválidas.
+
+  /api/platform-admin/logout:
+    post:
+      summary: Cerrar sesión de administración
+      tags:
+        - Super Admin
+      responses:
+        '200':
+          description: Sesión cerrada y cookie eliminada.

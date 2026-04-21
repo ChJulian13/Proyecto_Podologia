@@ -20,6 +20,7 @@ import notaClinicaRoutes from './routes/nota_clinica/nota_clinica.routes.js';
 import imagenRoutes from './routes/imagen_paciente/imagen_paciente.routes.js';
 import facturaRoutes from './routes/factura/factura.routes.js';
 import dashboardRoutes from './routes/dashboard/dashboard.routes.js';
+import platformAdminRoutes from './routes/platform_admin/platform_admin.routes.js';
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 // 2. RUTAS PÚBLICAS (No requieren token ni suscripción)
 // =========================================================
 app.use('/api/auth', authRoutes); 
+app.use('/api/platform-admin', platformAdminRoutes);
 
 const PORT = process.env.PORT || 3000;
 
