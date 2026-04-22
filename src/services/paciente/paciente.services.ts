@@ -24,20 +24,29 @@ export class PacienteService {
 
     const newId = crypto.randomUUID();
 
-    await this.pacienteRepository.create(
-      newId,
-      data.clinica_id,
-      data.nombre,
-      data.primer_apellido,
-      data.segundo_apellido ?? null,
-      data.telefono, // Cambió a obligatorio según BD
-      data.correo ?? null,
-      data.fecha_nacimiento ?? null,
-      data.direccion ?? null,
-      data.discapacidad ?? null,
-      data.alergias ?? null,
-      data.notas ?? null
-    );
+    // Enviamos un objeto que cumple con Partial<PacienteRow>
+    await this.pacienteRepository.create({
+      id: newId,
+      clinica_id: data.clinica_id,
+      nombre: data.nombre,
+      primer_apellido: data.primer_apellido,
+      segundo_apellido: data.segundo_apellido ?? null,
+      telefono: data.telefono,
+      correo: data.correo ?? null,
+      
+      // Nuevos campos de dirección estructurada
+      codigo_postal: data.codigoPostal ?? null,
+      estado: data.estado ?? null,
+      municipio: data.municipio ?? null,
+      ciudad: data.ciudad ?? null,
+      colonia: data.colonia ?? null,
+      calle_y_numero: data.calleYNumero ?? null,
+      
+      fecha_nacimiento: data.fecha_nacimiento ?? null,
+      discapacidad: data.discapacidad ?? null,
+      alergias: data.alergias ?? null,
+      notas: data.notas ?? null
+    });
 
     return await this.getById(newId);
   }
@@ -46,30 +55,27 @@ export class PacienteService {
     const existingRow = await this.pacienteRepository.findById(id);
     if (!existingRow) throw new Error('PACIENTE_NOT_FOUND');
 
-    const newNombre = data.nombre ?? existingRow.nombre;
-    const newPrimerApellido = data.primer_apellido ?? existingRow.primer_apellido;
-    const newSegundoApellido = data.segundo_apellido !== undefined ? data.segundo_apellido : existingRow.segundo_apellido;
-    const newTelefono = data.telefono ?? existingRow.telefono;
-    const newCorreo = data.correo !== undefined ? data.correo : existingRow.correo;
-    const newFechaNacimiento = data.fecha_nacimiento !== undefined ? data.fecha_nacimiento : existingRow.fecha_nacimiento;
-    const newDireccion = data.direccion !== undefined ? data.direccion : existingRow.direccion;
-    const newDiscapacidad = data.discapacidad !== undefined ? data.discapacidad : existingRow.discapacidad;
-    const newAlergias = data.alergias !== undefined ? data.alergias : existingRow.alergias;
-    const newNotas = data.notas !== undefined ? data.notas : existingRow.notas;
+    // Enviamos el ID y un objeto con los datos a actualizar
+    await this.pacienteRepository.update(id, {
+      nombre: data.nombre ?? existingRow.nombre,
+      primer_apellido: data.primer_apellido ?? existingRow.primer_apellido,
+      segundo_apellido: data.segundo_apellido !== undefined ? data.segundo_apellido : existingRow.segundo_apellido,
+      telefono: data.telefono ?? existingRow.telefono,
+      correo: data.correo !== undefined ? data.correo : existingRow.correo,
+      
+      // Nuevos campos de dirección estructurada
+      codigo_postal: data.codigoPostal !== undefined ? data.codigoPostal : existingRow.codigo_postal,
+      estado: data.estado !== undefined ? data.estado : existingRow.estado,
+      municipio: data.municipio !== undefined ? data.municipio : existingRow.municipio,
+      ciudad: data.ciudad !== undefined ? data.ciudad : existingRow.ciudad,
+      colonia: data.colonia !== undefined ? data.colonia : existingRow.colonia,
+      calle_y_numero: data.calleYNumero !== undefined ? data.calleYNumero : existingRow.calle_y_numero,
 
-    await this.pacienteRepository.update(
-      id, 
-      newNombre, 
-      newPrimerApellido, 
-      newSegundoApellido, 
-      newTelefono, 
-      newCorreo, 
-      newFechaNacimiento,
-      newDireccion,
-      newDiscapacidad,
-      newAlergias,
-      newNotas
-    );
+      fecha_nacimiento: data.fecha_nacimiento !== undefined ? data.fecha_nacimiento : existingRow.fecha_nacimiento,
+      discapacidad: data.discapacidad !== undefined ? data.discapacidad : existingRow.discapacidad,
+      alergias: data.alergias !== undefined ? data.alergias : existingRow.alergias,
+      notas: data.notas !== undefined ? data.notas : existingRow.notas
+    });
     
     return await this.getById(id);
   }

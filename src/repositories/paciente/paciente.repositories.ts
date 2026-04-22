@@ -29,30 +29,42 @@ export class PacienteRepository {
     return rows[0] ?? null;
   }
 
-  async create(
-    id: string, clinicaId: string, nombre: string, primerApellido: string, segundoApellido: string | null,
-    telefono: string, correo: string | null, fechaNacimiento: string | null,
-    direccion: string | null, discapacidad: string | null, alergias: string | null, notas: string | null
-  ): Promise<void> {
+  // En create()
+  async create(data: Partial<PacienteRow>): Promise<void> {
     await pool.execute(
-      `INSERT INTO pacientes 
-      (id, clinica_id, nombre, primer_apellido, segundo_apellido, telefono, correo, fecha_nacimiento, direccion, discapacidad, alergias, notas) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, clinicaId, nombre, primerApellido, segundoApellido, telefono, correo, fechaNacimiento, direccion, discapacidad, alergias, notas]
+      `INSERT INTO pacientes (
+        id, clinica_id, nombre, primer_apellido, segundo_apellido, 
+        telefono, correo, codigo_postal, estado, municipio, ciudad, colonia, calle_y_numero,
+        fecha_nacimiento, discapacidad, alergias, notas
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        data.id, data.clinica_id, data.nombre, data.primer_apellido, 
+        data.segundo_apellido ?? null, data.telefono, data.correo ?? null, 
+        data.codigo_postal ?? null, data.estado ?? null, data.municipio ?? null, 
+        data.ciudad ?? null, data.colonia ?? null, data.calle_y_numero ?? null,
+        data.fecha_nacimiento ?? null, data.discapacidad ?? null, 
+        data.alergias ?? null, data.notas ?? null
+      ] as any[]
     );
   }
 
-  async update(
-    id: string, nombre: string, primerApellido: string, segundoApellido: string | null,
-    telefono: string, correo: string | null, fechaNacimiento: string | null,
-    direccion: string | null, discapacidad: string | null, alergias: string | null, notas: string | null
-  ): Promise<void> {
+  // En update()
+  async update(id: string, data: Partial<PacienteRow>): Promise<void> {
     await pool.execute(
-      `UPDATE pacientes 
-       SET nombre = ?, primer_apellido = ?, segundo_apellido = ?, telefono = ?, correo = ?, 
-           fecha_nacimiento = ?, direccion = ?, discapacidad = ?, alergias = ?, notas = ? 
+      `UPDATE pacientes SET 
+        nombre = ?, primer_apellido = ?, segundo_apellido = ?, 
+        telefono = ?, correo = ?, codigo_postal = ?, estado = ?, municipio = ?, ciudad = ?, colonia = ?, calle_y_numero = ?,
+        fecha_nacimiento = ?, discapacidad = ?, alergias = ?, notas = ?
        WHERE id = ?`,
-      [nombre, primerApellido, segundoApellido, telefono, correo, fechaNacimiento, direccion, discapacidad, alergias, notas, id]
+      [
+        data.nombre, data.primer_apellido, data.segundo_apellido ?? null, 
+        data.telefono, data.correo ?? null, 
+        data.codigo_postal ?? null, data.estado ?? null, data.municipio ?? null, 
+        data.ciudad ?? null, data.colonia ?? null, data.calle_y_numero ?? null,
+        data.fecha_nacimiento ?? null, data.discapacidad ?? null, 
+        data.alergias ?? null, data.notas ?? null, 
+        id
+      ] as any[]
     );
   }
 

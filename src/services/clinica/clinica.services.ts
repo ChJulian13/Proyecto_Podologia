@@ -29,7 +29,13 @@ export class ClinicaService {
       plan_suscripcion_id: data.planSuscripcionId ?? null,
       fecha_vencimiento_suscripcion: data.fechaVencimientoSuscripcion ?? null,
       dominio_personalizado: data.dominioPersonalizado ?? null,
-      configuracion_visual: data.configuracionVisual ?? null
+      configuracion_visual: data.configuracionVisual ?? null,
+      codigo_postal: data.codigoPostal ?? null,
+      estado: data.estado ?? null,
+      municipio: data.municipio ?? null,
+      ciudad: data.ciudad ?? null,
+      colonia: data.colonia ?? null,
+      calle_y_numero: data.calleYNumero ?? null
     });
 
     return await this.getById(newId);
@@ -48,7 +54,13 @@ export class ClinicaService {
       dominio_personalizado: data.dominioPersonalizado !== undefined ? data.dominioPersonalizado : existing.dominio_personalizado,
       configuracion_visual: data.configuracionVisual !== undefined ? data.configuracionVisual : existing.configuracion_visual,
       // Conservamos el estado activo si no se pasa uno nuevo en un hipotético campo futuro
-      esta_activa: existing.esta_activa
+      esta_activa: existing.esta_activa,
+      codigo_postal: data.codigoPostal !== undefined ? data.codigoPostal : existing.codigo_postal,
+      estado: data.estado !== undefined ? data.estado : existing.estado,
+      municipio: data.municipio !== undefined ? data.municipio : existing.municipio,
+      ciudad: data.ciudad !== undefined ? data.ciudad : existing.ciudad,
+      colonia: data.colonia !== undefined ? data.colonia : existing.colonia,
+      calle_y_numero: data.calleYNumero !== undefined ? data.calleYNumero : existing.calle_y_numero
     });
     
     return await this.getById(id);

@@ -26,8 +26,8 @@ const app = express();
 
 // 1. Configuraciones Globales
 app.use(cors({
-  origin: 'http://localhost:4200', 
-  credentials: true 
+    origin: ['http://localhost:4100','http://localhost:4200'],
+    credentials: true 
 }));
 app.use(express.json());
 app.use(cookieParser());

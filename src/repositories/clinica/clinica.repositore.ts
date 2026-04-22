@@ -21,32 +21,26 @@ export class ClinicaRepository {
   }
 
   // 3. Crear clínica SaaS
- // 3. Crear clínica SaaS
   async create(data: Partial<ClinicaRow>): Promise<void> {
-    // Stringificamos el JSON si existe
     const configVisualStr = data.configuracion_visual ? JSON.stringify(data.configuracion_visual) : null;
 
     await pool.execute(
       `INSERT INTO clinicas (
         id, nombre, telefono, correo, 
         platform_admin_id, plan_suscripcion_id, 
-        fecha_vencimiento_suscripcion, dominio_personalizado, configuracion_visual
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        fecha_vencimiento_suscripcion, dominio_personalizado, configuracion_visual,
+        codigo_postal, estado, municipio, ciudad, colonia, calle_y_numero
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        data.id, 
-        data.nombre, 
-        data.telefono ?? null, 
-        data.correo ?? null,
-        data.platform_admin_id ?? null, 
-        data.plan_suscripcion_id ?? null,
-        data.fecha_vencimiento_suscripcion ?? null, 
-        data.dominio_personalizado ?? null,
-        configVisualStr
+        data.id, data.nombre, data.telefono ?? null, data.correo ?? null,
+        data.platform_admin_id ?? null, data.plan_suscripcion_id ?? null,
+        data.fecha_vencimiento_suscripcion ?? null, data.dominio_personalizado ?? null, configVisualStr,
+        data.codigo_postal ?? null, data.estado ?? null, data.municipio ?? null, 
+        data.ciudad ?? null, data.colonia ?? null, data.calle_y_numero ?? null
       ] as any[]
     );
   }
 
-  // 4. Actualizar clínica SaaS
   async update(id: string, data: Partial<ClinicaRow>): Promise<void> {
     const configVisualStr = data.configuracion_visual ? JSON.stringify(data.configuracion_visual) : null;
 
@@ -54,21 +48,20 @@ export class ClinicaRepository {
       `UPDATE clinicas SET 
         nombre = ?, telefono = ?, correo = ?, 
         plan_suscripcion_id = ?, fecha_vencimiento_suscripcion = ?, 
-        dominio_personalizado = ?, configuracion_visual = ?, esta_activa = ?
+        dominio_personalizado = ?, configuracion_visual = ?, esta_activa = ?,
+        codigo_postal = ?, estado = ?, municipio = ?, ciudad = ?, colonia = ?, calle_y_numero = ?
        WHERE id = ?`,
       [
-        data.nombre, 
-        data.telefono ?? null, 
-        data.correo ?? null,
-        data.plan_suscripcion_id ?? null, 
-        data.fecha_vencimiento_suscripcion ?? null,
-        data.dominio_personalizado ?? null, 
-        configVisualStr, 
-        data.esta_activa ?? 1, // Prevenimos undefined en el estado
+        data.nombre, data.telefono ?? null, data.correo ?? null,
+        data.plan_suscripcion_id ?? null, data.fecha_vencimiento_suscripcion ?? null,
+        data.dominio_personalizado ?? null, configVisualStr, data.esta_activa ?? 1,
+        data.codigo_postal ?? null, data.estado ?? null, data.municipio ?? null, 
+        data.ciudad ?? null, data.colonia ?? null, data.calle_y_numero ?? null,
         id
-      ] as any[] 
+      ] as any[]
     );
   }
+  
 
   // 5. Suspensión / Activación rápida (Toggle)
   async updateStatus(id: string, estaActiva: boolean): Promise<void> {
