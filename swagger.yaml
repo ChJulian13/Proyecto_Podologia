@@ -645,7 +645,7 @@ components:
           minLength: 6
           example: "MiNuevoPassword456"
           description: "La nueva contraseña (mínimo 6 caracteres)."
-          
+
     DireccionInfoEntity:
       type: object
       properties:
@@ -2201,3 +2201,34 @@ paths:
       responses:
         '200':
           description: Sesión cerrada y cookie eliminada.
+    
+  # Definición del endpoint en swagger.yaml
+  /api/direcciones/cp/{cp}:
+    get:
+      summary: Consultar información geográfica por Código Postal
+      tags:
+        - Direcciones
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: cp
+          required: true
+          description: Código postal de 5 dígitos
+          schema:
+            type: string
+            pattern: '^\d{5}$'
+      responses:
+        '200':
+          description: Información de dirección obtenida y transformada.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/DireccionInfoEntity'
+        '404':
+          description: Código postal no encontrado.
