@@ -11,6 +11,7 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(10, "El secreto debe tener al menos 10 caracteres"),
   // Zod se encarga de transformar el texto del .env a un número real
   JWT_EXPIRES_IN: z.coerce.number().default(86400),
+  MEXICO_API_URL: z.string().url()
 });
 
 // Parseamos process.env. Si falta algo, Zod lanzará un error y el servidor se detendrá.
