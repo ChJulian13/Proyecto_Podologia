@@ -48,6 +48,7 @@ swaggerDocs(app, PORT);
 // (Opcional) Si el SuperAdmin usa /api/clinicas para registrarlas, ponlo aquí.
 // Si las clínicas lo usan para ver su propia info, ponlo en las protegidas.
 app.use('/api/clinicas', clinicaRoutes); 
+app.use('/api/direcciones', sepomexRoutes); // Ruta pública para consulta de códigos postales
 
 // =========================================================
 // 3. RUTAS PROTEGIDAS (Operación diaria del SaaS)
@@ -65,7 +66,7 @@ apiProtegida.use('/imagenes-paciente', imagenRoutes);
 apiProtegida.use('/facturas', facturaRoutes);
 apiProtegida.use('/dashboard', dashboardRoutes);
 apiProtegida.use('/usuarios', usuarioRoutes);
-apiProtegida.use('/direcciones', sepomexRoutes);
+
 
 app.use('/api', apiProtegida);
 
