@@ -1,34 +1,44 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { UsuarioRepository } from '../../repositories/usuario/usuario.repositore.js';
+import { ClinicaRepository } from '../../repositories/clinica/clinica.repositore.js'; // <-- NUEVO IMPORT
 import { mapUsuarioRowToEntity, type UsuarioEntity } from '../../domain/usuario/usuario.domain.js';
 import type { LoginDTO } from '../../domain/auth/auth.domain.js';
 
 export class AuthService {
   private usuarioRepository = new UsuarioRepository();
+  private clinicaRepository = new ClinicaRepository(); // <-- NUEVA INSTANCIA
 
   async login(data: LoginDTO): Promise<{ token: string; usuario: UsuarioEntity }> {
     // 1. Obtenemos el arreglo de usuarios
     const usuarios = await this.usuarioRepository.findByCorreo(data.correo);
 
     // 2. Usamos desestructuración para tomar el primer elemento.
-    // Aquí 'usuario' es de tipo 'UsuarioRow | undefined'
     const [usuario] = usuarios;
 
-    // 3. Verificamos si existe. Si no existe, lanzamos el error.
-    // A partir de aquí, TypeScript sabe que 'usuario' es 100% una 'UsuarioRow'
+    // 3. Verificamos si existe.
     if (!usuario) {
         throw new Error('CREDENCIALES_INVALIDAS');
     }
 
-    // 4. Ahora 'usuario.contrasena_hash' será reconocido sin problemas
+    // 4. Validamos la contraseña primero (por seguridad, para evitar fuerza bruta de estados)
     const contrasenaValida = await bcrypt.compare(data.contrasena, usuario.contrasena_hash);
     
     if (!contrasenaValida) {
         throw new Error('CREDENCIALES_INVALIDAS');
     }
 
-    // 5. Generar el Token
+    // --- NUEVA VALIDACIÓN SAAS ---
+    // 5. Consultamos la clínica del usuario
+    const clinica = await this.clinicaRepository.findById(usuario.clinica_id);
+    
+    // Si la clínica no existe o su estado es 0 (false), bloqueamos el login
+    if (!clinica || clinica.esta_activa === 0) {
+        throw new Error('CLINICA_INACTIVA');
+    }
+    // -----------------------------
+
+    // 6. Generar el Token
     const payload = {
         id: usuario.id,
         clinicaId: usuario.clinica_id,
@@ -43,5 +53,5 @@ export class AuthService {
         token,
         usuario: mapUsuarioRowToEntity(usuario)
     };
-    }
+  }
 }
