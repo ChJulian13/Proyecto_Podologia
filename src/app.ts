@@ -21,6 +21,7 @@ import imagenRoutes from './routes/imagen_paciente/imagen_paciente.routes.js';
 import facturaRoutes from './routes/factura/factura.routes.js';
 import dashboardRoutes from './routes/dashboard/dashboard.routes.js';
 import platformAdminRoutes from './routes/platform_admin/platform_admin.routes.js';
+import sepomexRoutes from './routes/sepomex/sepomex.routes.js';
 
 const app = express();
 
@@ -64,6 +65,7 @@ apiProtegida.use('/imagenes-paciente', imagenRoutes);
 apiProtegida.use('/facturas', facturaRoutes);
 apiProtegida.use('/dashboard', dashboardRoutes);
 apiProtegida.use('/usuarios', usuarioRoutes);
+apiProtegida.use('/direcciones', sepomexRoutes);
 
 app.use('/api', apiProtegida);
 
