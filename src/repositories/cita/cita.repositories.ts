@@ -86,4 +86,27 @@ export class CitaRepository {
       [id]
     );
   }
+
+  // Obtener citas del día actual, con filtro opcional por podólogo
+  async findToday(clinicaId: string, podologoId?: string): Promise<CitaRow[]> {
+    // Usamos this.selectQuery para traer los nombres del paciente, podólogo y servicio
+    let query = `
+      ${this.selectQuery} 
+      WHERE c.clinica_id = ? 
+      AND c.fecha_programada = CURDATE()
+    `;
+    const params: any[] = [clinicaId];
+
+    // Si pasamos el ID del podólogo, añadimos la condición a la consulta
+    if (podologoId) {
+      query += ` AND c.podologo_id = ?`;
+      params.push(podologoId);
+    }
+
+    // Ordenamos por hora para que salgan en orden cronológico durante el día
+    query += ` ORDER BY c.hora_programada ASC`;
+
+    const [rows] = await pool.execute<any[]>(query, params);
+    return rows;
+  }
 }

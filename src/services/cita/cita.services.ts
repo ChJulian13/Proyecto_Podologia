@@ -99,4 +99,18 @@ export class CitaService {
 
     await this.citaRepository.cancelar(id);
   }
+
+  async getTodayCitas(clinicaId: string, usuarioId: string, rol: string): Promise<CitaEntity[]> {
+    let rows;
+    
+    // Regla de negocio: Si es podólogo, solo ve lo suyo. 
+    // Si es RECEPCIONISTA (o ADMIN), ve toda la clínica.
+    if (rol === 'PODOLOGO') {
+      rows = await this.citaRepository.findToday(clinicaId, usuarioId);
+    } else {
+      rows = await this.citaRepository.findToday(clinicaId);
+    }
+
+    return rows.map(mapCitaRowToEntity);
+  }
 }

@@ -828,6 +828,63 @@ paths:
         '400':
           description: Error de validación Zod.
 
+  /api/citas/hoy:
+    get:
+      summary: Obtener las citas programadas para el día de hoy
+      description: |
+        Retorna las citas correspondientes al día actual. 
+        El comportamiento es "inteligente" y dinámico según el rol del usuario autenticado en el token:
+        - Si el usuario es **PODOLOGO**: Retorna únicamente las citas asignadas a él en su clínica.
+        - Si el usuario es **RECEPCIONISTA** o **SUPER_ADMIN**: Retorna todas las citas de la clínica.
+      tags:
+        - Citas
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Citas del día obtenidas correctamente o lista vacía si no hay citas.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Citas del día obtenidas"
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CitaEntity'
+        '403':
+          description: Acceso denegado o clínica no identificada en el token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Acceso denegado o clínica no identificada"
+        '500':
+          description: Error interno al obtener las citas del día.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Error interno al obtener las citas del día"
+
   /api/citas/{id}:
     patch:
       summary: Actualizar o cambiar estado de una cita

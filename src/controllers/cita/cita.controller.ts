@@ -108,4 +108,33 @@ export class CitaController {
       res.status(500).json({ success: false, message: 'Error al cancelar la cita' });
     }
   };
+
+  getToday = async (req: Request, res: Response): Promise<void> => {
+    try {
+      // El middleware de autenticación inyecta la info del token en req.usuario
+      const usuario = (req as any).usuario;
+
+      if (!usuario || !usuario.clinicaId) {
+        res.status(403).json({ success: false, message: 'Acceso denegado o clínica no identificada' });
+        return;
+      }
+
+      // Pasamos los 3 datos clave: clínica, usuario y rol
+      const citasHoy = await this.citaService.getTodayCitas(
+        usuario.clinicaId, 
+        usuario.id, 
+        usuario.rol
+      );
+
+      res.status(200).json({ 
+        success: true, 
+        data: citasHoy,
+        message: citasHoy.length === 0 ? 'No hay citas programadas para hoy' : 'Citas del día obtenidas'
+      });
+
+    } catch (error: any) {
+      console.error('Error al obtener citas de hoy:', error);
+      res.status(500).json({ success: false, message: 'Error interno al obtener las citas del día' });
+    }
+  };
 }

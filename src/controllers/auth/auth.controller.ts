@@ -40,6 +40,7 @@ export class AuthController {
       
       // --- NUEVA CAPTURA DE ERROR ---
       if (error.message === 'CLINICA_INACTIVA') {
+        // Usamos 403 Forbidden: El usuario es quien dice ser, pero no tiene permiso de entrar
         res.status(403).json({ 
           success: false, 
           message: 'El acceso está suspendido. La clínica a la que perteneces se encuentra inactiva por falta de pago o suspensión.' 
