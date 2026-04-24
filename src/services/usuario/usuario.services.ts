@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
-import { UsuarioRepository } from '../../repositories/usuario/usuario.repositore.js';
-import { ClinicaRepository } from '../../repositories/clinica/clinica.repositore.js'; 
+import { UsuarioRepository } from '../../repositories/usuario/usuario.repository.js';
+import { ClinicaRepository } from '../../repositories/clinica/clinica.repository.js'; 
 import { mapUsuarioRowToEntity, type CreateUsuarioDTO, type UpdateUsuarioDTO, type UsuarioEntity, type UpdatePasswordDTO } from '../../domain/usuario/usuario.domain.js';
 
 export class UsuarioService {

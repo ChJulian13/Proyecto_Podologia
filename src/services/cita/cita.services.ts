@@ -1,8 +1,8 @@
 import crypto from 'crypto';
-import { CitaRepository } from '../../repositories/cita/cita.repositories.js';
-import { PacienteRepository } from '../../repositories/paciente/paciente.repositories.js';
-import { UsuarioRepository } from '../../repositories/usuario/usuario.repositore.js';
-import { ServicioRepository } from '../../repositories/servicio/servicio.repositories.js';
+import { CitaRepository } from '../../repositories/cita/cita.repository.js';
+import { PacienteRepository } from '../../repositories/paciente/paciente.repository.js';
+import { UsuarioRepository } from '../../repositories/usuario/usuario.repository.js';
+import { ServicioRepository } from '../../repositories/servicio/servicio.repository.js';
 import { mapCitaRowToEntity, type CreateCitaDTO, type UpdateCitaDTO, type CitaEntity } from '../../domain/cita/cita.domain.js';
 
 export class CitaService {

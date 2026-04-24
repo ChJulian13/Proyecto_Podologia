@@ -1,6 +1,6 @@
 import crypto from 'crypto';
-import { ServicioRepository } from '../../repositories/servicio/servicio.repositories.js';
-import { ClinicaRepository } from '../../repositories/clinica/clinica.repositore.js';
+import { ServicioRepository } from '../../repositories/servicio/servicio.repository.js';
+import { ClinicaRepository } from '../../repositories/clinica/clinica.repository.js';
 import { mapServicioRowToEntity, type CreateServicioDTO, type UpdateServicioDTO, type ServicioEntity } from '../../domain/servicio/servicio.domain.js';
 
 export class ServicioService {

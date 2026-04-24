@@ -1,8 +1,8 @@
 import crypto from 'crypto';
-import { NotaClinicaRepository } from '../../repositories/nota_clinica/nota_clinica.repositories.js';
-import { PacienteRepository } from '../../repositories/paciente/paciente.repositories.js';
-import { UsuarioRepository } from '../../repositories/usuario/usuario.repositore.js';
-import { CitaRepository } from '../../repositories/cita/cita.repositories.js';
+import { NotaClinicaRepository } from '../../repositories/nota_clinica/nota_clinica.repository.js';
+import { PacienteRepository } from '../../repositories/paciente/paciente.repository.js';
+import { UsuarioRepository } from '../../repositories/usuario/usuario.repository.js';
+import { CitaRepository } from '../../repositories/cita/cita.repository.js';
 import { mapNotaClinicaRowToEntity, type CreateNotaClinicaDTO, type UpdateNotaClinicaDTO, type NotaClinicaEntity } from '../../domain/nota_clinica/nota_clinica.domain.js';
 
 export class NotaClinicaService {

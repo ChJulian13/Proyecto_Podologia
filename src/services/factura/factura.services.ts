@@ -1,7 +1,7 @@
 import crypto from 'crypto';
-import { FacturaRepository } from '../../repositories/factura/factura.repositories.js';
-import { PacienteRepository } from '../../repositories/paciente/paciente.repositories.js';
-import { CitaRepository } from '../../repositories/cita/cita.repositories.js';
+import { FacturaRepository } from '../../repositories/factura/factura.repository.js';
+import { PacienteRepository } from '../../repositories/paciente/paciente.repository.js';
+import { CitaRepository } from '../../repositories/cita/cita.repository.js';
 import { mapFacturaRowToEntity, type CreateFacturaDTO, type UpdateEstadoFacturaDTO, type FacturaEntity } from '../../domain/factura/factura.domain.js';
 
 export class FacturaService {

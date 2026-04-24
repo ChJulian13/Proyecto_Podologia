@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { ClinicaRepository } from '../../repositories/clinica/clinica.repositore.js';
+import { ClinicaRepository } from '../../repositories/clinica/clinica.repository.js';
 import { type CreateClinicaDTO, type UpdateClinicaDTO, type ClinicaRow } from '../../domain/clinica/clinica.domain.js';
 
 export class ClinicaService {

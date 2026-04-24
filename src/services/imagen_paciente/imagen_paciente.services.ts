@@ -1,9 +1,9 @@
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
-import { ImagenPacienteRepository } from '../../repositories/imagen_paciente/imagen_paciente.repositories.js';
-import { PacienteRepository } from '../../repositories/paciente/paciente.repositories.js';
-import { NotaClinicaRepository } from '../../repositories/nota_clinica/nota_clinica.repositories.js';
+import { ImagenPacienteRepository } from '../../repositories/imagen_paciente/imagen_paciente.repository.js';
+import { PacienteRepository } from '../../repositories/paciente/paciente.repository.js';
+import { NotaClinicaRepository } from '../../repositories/nota_clinica/nota_clinica.repository.js';
 import { mapImagenRowToEntity, type CreateImagenDTO, type ImagenPacienteEntity } from '../../domain/imagen_paciente/imagen_paciente.domain.js';
 
 export class ImagenPacienteService {

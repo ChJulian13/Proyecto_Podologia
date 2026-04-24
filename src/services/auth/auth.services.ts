@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { UsuarioRepository } from '../../repositories/usuario/usuario.repositore.js';
-import { ClinicaRepository } from '../../repositories/clinica/clinica.repositore.js'; // <-- NUEVO IMPORT
+import { UsuarioRepository } from '../../repositories/usuario/usuario.repository.js';
+import { ClinicaRepository } from '../../repositories/clinica/clinica.repository.js'; // <-- NUEVO IMPORT
 import { mapUsuarioRowToEntity, type UsuarioEntity } from '../../domain/usuario/usuario.domain.js';
 import type { LoginDTO } from '../../domain/auth/auth.domain.js';
 

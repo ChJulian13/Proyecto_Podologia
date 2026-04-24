@@ -1,4 +1,4 @@
-import { DashboardRepository } from '../../repositories/dashboard/dashboard.repositories.js';
+import { DashboardRepository } from '../../repositories/dashboard/dashboard.repository.js';
 import { 
   mapResumenToEntity, mapCitaProximaRowToEntity, mapAlertaNotaToEntity,
   mapIngresoToEntity, mapServicioPopularToEntity, mapTasaAsistenciaToEntity, mapCrecimientoToEntity,
