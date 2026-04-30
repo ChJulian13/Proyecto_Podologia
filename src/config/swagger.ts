@@ -10,5 +10,4 @@ const swaggerDocument = YAML.load(swaggerFilePath);
 
 export const swaggerDocs = (app: Application, port: string | number) => {
   app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-  console.log(`📚 Documentación disponible en http://localhost:${port}/api/docs`);
 };
