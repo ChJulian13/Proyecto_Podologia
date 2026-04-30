@@ -1,5 +1,5 @@
 import { pool } from '../../config/database.js';
-import type { CitaProximaRow, ResumenHoyRow, AlertaNotaRow, IngresoRow, ServicioPopularRow, TasaAsistenciaRow, CrecimientoPacientesRow } from '../../domain/dashboard/dashboard.damain.js';
+import type { CitaProximaRow, ResumenHoyRow, AlertaNotaRow, IngresoRow, ServicioPopularRow, TasaAsistenciaRow, CrecimientoPacientesRow } from '../../domain/dashboard/dashboard.domain.js';
 
 export class DashboardRepository {
   
