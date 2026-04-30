@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { env } from '../../config/env.js';
 import type { RolUsuario } from '../../domain/usuario/usuario.domain.js';
 
 export interface TokenPayload {
@@ -22,7 +23,7 @@ export const verificarToken = (req: AuthRequest, res: Response, next: NextFuncti
   }
 
   try {
-    const secret = process.env.JWT_SECRET || 'clave_secreta_por_defecto';
+    const secret = env.JWT_SECRET;
     
     const payloadDecodificado = jwt.verify(token, secret) as TokenPayload;
 
