@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { buildNombreCompleto } from '../../common/utils/name.utils.js';
+import { mapDireccionRowToFields, type DireccionFields, type DireccionRow } from '../../common/types/direccion.types.js';
 
 export const CreatePacienteSchema = z.object({
   clinica_id: z.string().uuid("El ID de la clínica debe ser un UUID válido"),
@@ -76,7 +78,6 @@ export interface PacienteEntity {
 }
 
 export const mapPacienteRowToEntity = (row: PacienteRow): PacienteEntity => {
-  const nombreCompleto = [row.nombre, row.primer_apellido, row.segundo_apellido].filter(Boolean).join(' ');
   return {
     id: row.id,
     clinica: {
@@ -86,7 +87,7 @@ export const mapPacienteRowToEntity = (row: PacienteRow): PacienteEntity => {
     nombre: row.nombre,
     primerApellido: row.primer_apellido,
     segundoApellido: row.segundo_apellido,
-    nombreCompleto: nombreCompleto,
+    nombreCompleto: buildNombreCompleto(row.nombre, row.primer_apellido, row.segundo_apellido),
     telefono: row.telefono,
     correo: row.correo,
     fechaNacimiento: row.fecha_nacimiento ? new Date(row.fecha_nacimiento).toISOString().substring(0, 10) : null,
@@ -95,11 +96,6 @@ export const mapPacienteRowToEntity = (row: PacienteRow): PacienteEntity => {
     notas: row.notas,
     estaActivo: row.esta_activo === 1,
     fechaCreacion: row.fecha_creacion,
-    codigoPostal: row.codigo_postal,
-    estado: row.estado,
-    municipio: row.municipio,
-    ciudad: row.ciudad,
-    colonia: row.colonia,
-    calleYNumero: row.calle_y_numero
+    ...mapDireccionRowToFields(row)
   };
 };

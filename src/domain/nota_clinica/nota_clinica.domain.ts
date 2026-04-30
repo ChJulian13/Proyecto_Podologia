@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { toDateString } from '../../common/utils/date.utils.js';
+import { buildNombreCompleto } from '../../common/utils/name.utils.js';
 
 // ==========================================
 // 1. CAPA DE VALIDACIÓN (DTOs)
@@ -94,26 +96,6 @@ export interface NotaClinicaEntity {
 // 4. MAPPER
 // ==========================================
 export const mapNotaClinicaRowToEntity = (row: NotaClinicaRow): NotaClinicaEntity => {
-  let fechaLimpia = '';
-  if (row.fecha_nota instanceof Date) {
-    fechaLimpia = row.fecha_nota.toISOString().substring(0, 10);
-  } else {
-    fechaLimpia = typeof row.fecha_nota === 'string' 
-      ? row.fecha_nota.substring(0, 10) 
-      : String(row.fecha_nota);
-  }
-
-  // Limpiar fecha de la cita si existe
-  let citaFechaLimpia = '';
-  if (row.cita_fecha_programada) {
-    citaFechaLimpia = row.cita_fecha_programada instanceof Date 
-      ? row.cita_fecha_programada.toISOString().substring(0, 10)
-      : String(row.cita_fecha_programada).substring(0, 10);
-  }
-
-  const pacienteNombreCompleto = [row.paciente_nombre, row.paciente_primer_apellido, row.paciente_segundo_apellido].filter(Boolean).join(' ');
-  const podologoNombreCompleto = [row.podologo_nombre, row.podologo_primer_apellido, row.podologo_segundo_apellido].filter(Boolean).join(' ');
-
   return {
     id: row.id,
     clinica: {
@@ -125,21 +107,21 @@ export const mapNotaClinicaRowToEntity = (row: NotaClinicaRow): NotaClinicaEntit
       nombre: row.paciente_nombre || 'Desconocido',
       primerApellido: row.paciente_primer_apellido || 'Desconocido',
       segundoApellido: row.paciente_segundo_apellido || null,
-      nombreCompleto: pacienteNombreCompleto || 'Desconocido'
+      nombreCompleto: buildNombreCompleto(row.paciente_nombre, row.paciente_primer_apellido, row.paciente_segundo_apellido)
     },
     podologo: {
       id: row.podologo_id,
       nombre: row.podologo_nombre || 'Desconocido',
       primerApellido: row.podologo_primer_apellido || 'Desconocido',
       segundoApellido: row.podologo_segundo_apellido || null,
-      nombreCompleto: podologoNombreCompleto || 'Desconocido'
+      nombreCompleto: buildNombreCompleto(row.podologo_nombre, row.podologo_primer_apellido, row.podologo_segundo_apellido)
     },
     cita: row.cita_id ? {
       id: row.cita_id,
-      fechaProgramada: citaFechaLimpia,
+      fechaProgramada: toDateString(row.cita_fecha_programada),
       servicioNombre: row.servicio_nombre || 'Servicio General'
     } : null,
-    fechaNota: fechaLimpia,
+    fechaNota: toDateString(row.fecha_nota),
     notas: row.notas,
     diagnostico: row.diagnostico,
     tratamiento: row.tratamiento,

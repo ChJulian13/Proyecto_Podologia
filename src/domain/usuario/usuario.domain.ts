@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { buildNombreCompleto } from '../../common/utils/name.utils.js';
 
 // ==========================================
 // 1. CAPA DE VALIDACIÓN (DTOs) - Se mantiene igual
@@ -74,8 +75,6 @@ export interface UsuarioEntity {
 // 4. MAPPER
 // ==========================================
 export const mapUsuarioRowToEntity = (row: UsuarioRow): UsuarioEntity => {
-  const nombreCompleto = [row.nombre, row.primer_apellido, row.segundo_apellido].filter(Boolean).join(' ');
-
   return {
     id: row.id,
     clinica: {
@@ -86,7 +85,7 @@ export const mapUsuarioRowToEntity = (row: UsuarioRow): UsuarioEntity => {
     nombre: row.nombre,
     primerApellido: row.primer_apellido,
     segundoApellido: row.segundo_apellido,
-    nombreCompleto: nombreCompleto,
+    nombreCompleto: buildNombreCompleto(row.nombre, row.primer_apellido, row.segundo_apellido),
     rol: row.rol,
     estaActivo: row.esta_activo === 1,
     fechaCreacion: row.fecha_creacion,

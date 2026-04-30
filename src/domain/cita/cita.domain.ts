@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { toDateString } from '../../common/utils/date.utils.js';
+import { buildNombreCompleto } from '../../common/utils/name.utils.js';
 
 // ==========================================
 // 1. CAPA DE VALIDACIÓN (DTOs)
@@ -56,7 +58,6 @@ export interface CitaRow {
 export interface CitaEntity {
   id: string;
   clinicaId: string;
-  // Reemplazamos los IDs planos por objetos anidados
   paciente: {
     id: string;
     nombre: string;
@@ -88,45 +89,29 @@ export interface CitaEntity {
 // 4. MAPPER
 // ==========================================
 export const mapCitaRowToEntity = (row: CitaRow): CitaEntity => {
-  let fechaLimpia = '';
-  if (row.fecha_programada instanceof Date) {
-    fechaLimpia = row.fecha_programada.toISOString().substring(0, 10);
-  } else {
-    fechaLimpia = typeof row.fecha_programada === 'string' 
-      ? row.fecha_programada.substring(0, 10) 
-      : String(row.fecha_programada);
-  }
-
-  const horaLimpia = row.hora_programada.substring(0, 5);
-
-  // Construir nombres completos
-  const pacienteNombreCompleto = [row.paciente_nombre, row.paciente_primer_apellido, row.paciente_segundo_apellido].filter(Boolean).join(' ');
-  const podologoNombreCompleto = [row.podologo_nombre, row.podologo_primer_apellido, row.podologo_segundo_apellido].filter(Boolean).join(' ');
-
   return {
     id: row.id,
     clinicaId: row.clinica_id,
-    // Estructuras anidadas listas para el Frontend
     paciente: {
       id: row.paciente_id,
       nombre: row.paciente_nombre || 'Desconocido',
       primerApellido: row.paciente_primer_apellido || 'Desconocido',
       segundoApellido: row.paciente_segundo_apellido || null,
-      nombreCompleto: pacienteNombreCompleto || 'Desconocido'
+      nombreCompleto: buildNombreCompleto(row.paciente_nombre, row.paciente_primer_apellido, row.paciente_segundo_apellido)
     },
     podologo: {
       id: row.podologo_id,
       nombre: row.podologo_nombre || 'Desconocido',
       primerApellido: row.podologo_primer_apellido || 'Desconocido',
       segundoApellido: row.podologo_segundo_apellido || null,
-      nombreCompleto: podologoNombreCompleto || 'Desconocido'
+      nombreCompleto: buildNombreCompleto(row.podologo_nombre, row.podologo_primer_apellido, row.podologo_segundo_apellido)
     },
     servicio: row.servicio_id ? {
       id: row.servicio_id,
       nombre: row.servicio_nombre || 'Desconocido'
     } : null,
-    fechaProgramada: fechaLimpia,
-    horaProgramada: horaLimpia,
+    fechaProgramada: toDateString(row.fecha_programada),
+    horaProgramada: row.hora_programada.substring(0, 5),
     duracionMinutos: row.duracion_minutos,
     estado: row.estado,
     notas: row.notas,

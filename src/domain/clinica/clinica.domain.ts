@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { mapDireccionRowToFields, type DireccionFields, type DireccionRow } from '../../common/types/direccion.types.js';
 
 // ==========================================
 // 1. CAPA DE VALIDACIÓN (DTOs)
@@ -120,11 +121,6 @@ export const mapClinicaRowToEntity = (row: ClinicaRow): ClinicaEntity => {
     fechaVencimientoSuscripcion: row.fecha_vencimiento_suscripcion,
     dominioPersonalizado: row.dominio_personalizado,
     configuracionVisual: row.configuracion_visual,
-    codigoPostal: row.codigo_postal,
-    estado: row.estado,
-    municipio: row.municipio,
-    ciudad: row.ciudad,
-    colonia: row.colonia,
-    calleYNumero: row.calle_y_numero
+    ...mapDireccionRowToFields(row)
   };
 };
