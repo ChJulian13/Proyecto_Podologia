@@ -4,6 +4,7 @@ import path from 'path';
 import { ImagenPacienteRepository } from '../../repositories/imagen_paciente/imagen_paciente.repository.js';
 import { PacienteRepository } from '../../repositories/paciente/paciente.repository.js';
 import { NotaClinicaRepository } from '../../repositories/nota_clinica/nota_clinica.repository.js';
+import { NotFoundError, BadRequestError } from '../../common/errors/domain.errors.js';
 import { mapImagenRowToEntity, type CreateImagenDTO, type ImagenPacienteEntity } from '../../domain/imagen_paciente/imagen_paciente.domain.js';
 
 export class ImagenPacienteService {
@@ -18,7 +19,7 @@ export class ImagenPacienteService {
 
   async getById(id: string): Promise<ImagenPacienteEntity> {
     const row = await this.imagenRepository.findById(id);
-    if (!row) throw new Error('IMAGEN_NOT_FOUND');
+    if (!row) throw new NotFoundError('Imagen');
     return mapImagenRowToEntity(row);
   }
 
@@ -27,14 +28,14 @@ export class ImagenPacienteService {
     // 1. Validar Paciente
     const paciente = await this.pacienteRepository.findById(data.paciente_id);
     if (!paciente || paciente.clinica_id !== data.clinica_id) {
-      throw new Error('PACIENTE_INVALIDO');
+      throw new BadRequestError('El paciente no existe o no pertenece a esta clínica');
     }
 
     // 2. Validar Nota Clínica (si se envió)
     if (data.nota_clinica_id) {
       const nota = await this.notaRepository.findById(data.nota_clinica_id);
       if (!nota || nota.paciente_id !== data.paciente_id) {
-        throw new Error('NOTA_INVALIDA');
+        throw new BadRequestError('La nota clínica no coincide con este paciente');
       }
     }
 
@@ -57,7 +58,7 @@ export class ImagenPacienteService {
 
   async delete(id: string): Promise<void> {
     const imagen = await this.imagenRepository.findById(id);
-    if (!imagen) throw new Error('IMAGEN_NOT_FOUND');
+    if (!imagen) throw new NotFoundError('Imagen');
 
     // 1. Borrar el registro de la base de datos
     await this.imagenRepository.delete(id);

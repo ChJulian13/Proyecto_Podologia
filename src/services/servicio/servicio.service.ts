@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { ServicioRepository } from '../../repositories/servicio/servicio.repository.js';
 import { ClinicaRepository } from '../../repositories/clinica/clinica.repository.js';
+import { NotFoundError } from '../../common/errors/domain.errors.js';
 import { mapServicioRowToEntity, type CreateServicioDTO, type UpdateServicioDTO, type ServicioEntity } from '../../domain/servicio/servicio.domain.js';
 
 export class ServicioService {
@@ -14,13 +15,13 @@ export class ServicioService {
 
   async getById(id: string): Promise<ServicioEntity> {
     const row = await this.servicioRepository.findById(id);
-    if (!row) throw new Error('SERVICIO_NOT_FOUND');
+    if (!row) throw new NotFoundError('Servicio');
     return mapServicioRowToEntity(row);
   }
 
   async create(data: CreateServicioDTO): Promise<ServicioEntity> {
     const clinica = await this.clinicaRepository.findById(data.clinica_id);
-    if (!clinica) throw new Error('CLINICA_NOT_FOUND');
+    if (!clinica) throw new NotFoundError('Clínica');
 
     const newId = crypto.randomUUID();
 
@@ -38,7 +39,7 @@ export class ServicioService {
 
   async update(id: string, data: UpdateServicioDTO): Promise<ServicioEntity> {
     const existingRow = await this.servicioRepository.findById(id);
-    if (!existingRow) throw new Error('SERVICIO_NOT_FOUND');
+    if (!existingRow) throw new NotFoundError('Servicio');
 
     const newNombre = data.nombre ?? existingRow.nombre;
     const newDescripcion = data.descripcion !== undefined ? data.descripcion : existingRow.descripcion;
@@ -51,7 +52,7 @@ export class ServicioService {
 
   async delete(id: string): Promise<void> {
     const existing = await this.servicioRepository.findById(id);
-    if (!existing) throw new Error('SERVICIO_NOT_FOUND');
+    if (!existing) throw new NotFoundError('Servicio');
 
     await this.servicioRepository.softDelete(id);
   }

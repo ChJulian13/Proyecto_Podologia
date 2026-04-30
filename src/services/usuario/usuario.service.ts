@@ -1,7 +1,8 @@
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import { UsuarioRepository } from '../../repositories/usuario/usuario.repository.js';
-import { ClinicaRepository } from '../../repositories/clinica/clinica.repository.js'; 
+import { ClinicaRepository } from '../../repositories/clinica/clinica.repository.js';
+import { NotFoundError, ConflictError, UnauthorizedError } from '../../common/errors/domain.errors.js';
 import { mapUsuarioRowToEntity, type CreateUsuarioDTO, type UpdateUsuarioDTO, type UsuarioEntity, type UpdatePasswordDTO } from '../../domain/usuario/usuario.domain.js';
 
 export class UsuarioService {
@@ -15,18 +16,18 @@ export class UsuarioService {
 
   async getById(id: string): Promise<UsuarioEntity> {
     const row = await this.usuarioRepository.findById(id);
-    if (!row) throw new Error('USUARIO_NOT_FOUND');
+    if (!row) throw new NotFoundError('Usuario');
     return mapUsuarioRowToEntity(row);
   }
 
   async create(data: CreateUsuarioDTO): Promise<UsuarioEntity> {
     // 1. Verificamos que la clínica exista
     const clinica = await this.clinicaRepository.findById(data.clinica_id);
-    if (!clinica) throw new Error('CLINICA_NOT_FOUND');
+    if (!clinica) throw new NotFoundError('Clínica');
 
     // 2. Verificamos que el correo no esté duplicado en esta clínica
     const existeCorreo = await this.usuarioRepository.findByCorreoYClinica(data.correo, data.clinica_id);
-    if (existeCorreo) throw new Error('CORREO_DUPLICADO');
+    if (existeCorreo) throw new ConflictError('Este correo ya está registrado en esta clínica');
 
     // 3. Generamos el UUID y encriptamos la contraseña (10 rondas de salt)
     const newId = crypto.randomUUID();
@@ -49,12 +50,12 @@ export class UsuarioService {
 
   async update(id: string, data: UpdateUsuarioDTO): Promise<UsuarioEntity> {
     const existingRow = await this.usuarioRepository.findById(id);
-    if (!existingRow) throw new Error('USUARIO_NOT_FOUND');
+    if (!existingRow) throw new NotFoundError('Usuario');
 
     // Si intenta cambiar el correo, verificamos que el nuevo no le pertenezca a otro usuario en su misma clínica
     if (data.correo && data.correo !== existingRow.correo) {
       const existeCorreo = await this.usuarioRepository.findByCorreoYClinica(data.correo, existingRow.clinica_id);
-      if (existeCorreo) throw new Error('CORREO_DUPLICADO');
+      if (existeCorreo) throw new ConflictError('Este correo ya está registrado en esta clínica');
     }
 
     const newCorreo = data.correo ?? existingRow.correo;
@@ -70,17 +71,17 @@ export class UsuarioService {
 
   async delete(id: string): Promise<void> {
     const existing = await this.usuarioRepository.findById(id);
-    if (!existing) throw new Error('USUARIO_NOT_FOUND');
+    if (!existing) throw new NotFoundError('Usuario');
 
     await this.usuarioRepository.softDelete(id);
   }
 
   async updatePassword(id: string, data: UpdatePasswordDTO): Promise<void> {
     const existingRow = await this.usuarioRepository.findById(id);
-    if (!existingRow) throw new Error('USUARIO_NOT_FOUND');
+    if (!existingRow) throw new NotFoundError('Usuario');
 
     const isMatch = await bcrypt.compare(data.contrasenaActual, existingRow.contrasena_hash);
-    if (!isMatch) throw new Error('CONTRASENA_INCORRECTA');
+    if (!isMatch) throw new UnauthorizedError('La contraseña actual es incorrecta');
 
     const nuevoHash = await bcrypt.hash(data.nuevaContrasena, 10);
     await this.usuarioRepository.updatePassword(id, nuevoHash);

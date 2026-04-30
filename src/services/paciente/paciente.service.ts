@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { PacienteRepository } from '../../repositories/paciente/paciente.repository.js';
 import { ClinicaRepository } from '../../repositories/clinica/clinica.repository.js';
+import { NotFoundError } from '../../common/errors/domain.errors.js';
 import { mapPacienteRowToEntity, type CreatePacienteDTO, type UpdatePacienteDTO, type PacienteEntity } from '../../domain/paciente/paciente.domain.js';
 
 export class PacienteService {
@@ -14,13 +15,13 @@ export class PacienteService {
 
   async getById(id: string): Promise<PacienteEntity> {
     const row = await this.pacienteRepository.findById(id);
-    if (!row) throw new Error('PACIENTE_NOT_FOUND');
+    if (!row) throw new NotFoundError('Paciente');
     return mapPacienteRowToEntity(row);
   }
 
   async create(data: CreatePacienteDTO): Promise<PacienteEntity> {
     const clinica = await this.clinicaRepository.findById(data.clinica_id);
-    if (!clinica) throw new Error('CLINICA_NOT_FOUND');
+    if (!clinica) throw new NotFoundError('Clínica');
 
     const newId = crypto.randomUUID();
 
@@ -53,7 +54,7 @@ export class PacienteService {
 
   async update(id: string, data: UpdatePacienteDTO): Promise<PacienteEntity> {
     const existingRow = await this.pacienteRepository.findById(id);
-    if (!existingRow) throw new Error('PACIENTE_NOT_FOUND');
+    if (!existingRow) throw new NotFoundError('Paciente');
 
     // Enviamos el ID y un objeto con los datos a actualizar
     await this.pacienteRepository.update(id, {
@@ -82,7 +83,7 @@ export class PacienteService {
 
   async delete(id: string): Promise<void> {
     const existing = await this.pacienteRepository.findById(id);
-    if (!existing) throw new Error('PACIENTE_NOT_FOUND');
+    if (!existing) throw new NotFoundError('Paciente');
 
     await this.pacienteRepository.softDelete(id);
   }

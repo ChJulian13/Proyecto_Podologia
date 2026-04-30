@@ -1,130 +1,109 @@
-import type { Response } from 'express';
-import { DashboardService } from '../../services/dashboard/dashboard.services.js';
-// Asegúrate de que esta ruta apunte correctamente a tu archivo auth.middleware.ts
-import type { AuthRequest } from '../../middleware/auth/auth.middleware.js'; 
+import type { Response, NextFunction } from 'express';
+import { DashboardService } from '../../services/dashboard/dashboard.service.js';
+import type { AuthRequest } from '../../middleware/auth/auth.middleware.js';
+import { BadRequestError, UnauthorizedError } from '../../common/errors/domain.errors.js';
 
 export class DashboardController {
   private dashboardService = new DashboardService();
 
-  getResumenHoy = async (req: AuthRequest, res: Response): Promise<void> => {
+  getResumenHoy = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-      // Verificación de seguridad extra (aunque el middleware ya lo valida)
-      if (!req.usuario) {
-        res.status(401).json({ success: false, message: 'Sesión no válida' });
-        return;
-      }
-
-      // Extraemos exactamente las variables como las definiste en TokenPayload
+      if (!req.usuario) throw new UnauthorizedError('Sesión no válida');
       const { clinicaId, id, rol } = req.usuario;
-      
-      const resumen = await this.dashboardService.getResumenHoy(clinicaId, id, rol);
+      const resumen = await this.dashboardService.getResumenHoy(clinicaId!, id, rol);
       res.status(200).json({ success: true, data: resumen });
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Error al cargar el resumen del día' });
+      next(error);
     }
   };
 
-  getCitasProximas = async (req: AuthRequest, res: Response): Promise<void> => {
+  getCitasProximas = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-      if (!req.usuario) {
-        res.status(401).json({ success: false, message: 'Sesión no válida' });
-        return;
-      }
-
+      if (!req.usuario) throw new UnauthorizedError('Sesión no válida');
       const { clinicaId, id, rol } = req.usuario;
-      
-      const citas = await this.dashboardService.getProximasCitas(clinicaId, id, rol);
+      const citas = await this.dashboardService.getProximasCitas(clinicaId!, id, rol);
       res.status(200).json({ success: true, data: citas });
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Error al cargar las próximas citas' });
+      next(error);
     }
   };
 
-  getAlertasNotas = async (req: AuthRequest, res: Response): Promise<void> => {
+  getAlertasNotas = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-      if (!req.usuario) {
-        res.status(401).json({ success: false, message: 'Sesión no válida' });
-        return;
-      }
-
+      if (!req.usuario) throw new UnauthorizedError('Sesión no válida');
       const { clinicaId, id, rol } = req.usuario;
-      
-      const alertas = await this.dashboardService.getAlertasNotas(clinicaId, id, rol);
+      const alertas = await this.dashboardService.getAlertasNotas(clinicaId!, id, rol);
       res.status(200).json({ success: true, data: alertas });
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Error al cargar las alertas de notas' });
+      next(error);
     }
   };
 
-  getIngresos = async (req: AuthRequest, res: Response): Promise<void> => {
+  getIngresos = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-      if (!req.usuario) return; // Middleware ya manejó el 401
+      if (!req.usuario) throw new UnauthorizedError('Sesión no válida');
       const { clinicaId } = req.usuario;
       const { fechaInicio, fechaFin } = req.query;
 
       if (typeof fechaInicio !== 'string' || typeof fechaFin !== 'string') {
-        res.status(400).json({ success: false, message: 'Faltan parámetros fechaInicio o fechaFin' });
-        return;
+        throw new BadRequestError('Faltan parámetros fechaInicio o fechaFin');
       }
 
-      const ingresos = await this.dashboardService.getIngresos(clinicaId, fechaInicio, fechaFin);
+      const ingresos = await this.dashboardService.getIngresos(clinicaId!, fechaInicio, fechaFin);
       res.status(200).json({ success: true, data: ingresos });
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Error al cargar los ingresos' });
+      next(error);
     }
   };
 
-  getServiciosPopulares = async (req: AuthRequest, res: Response): Promise<void> => {
+  getServiciosPopulares = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-      if (!req.usuario) return;
+      if (!req.usuario) throw new UnauthorizedError('Sesión no válida');
       const { clinicaId } = req.usuario;
       const { fechaInicio, fechaFin } = req.query;
 
       if (typeof fechaInicio !== 'string' || typeof fechaFin !== 'string') {
-        res.status(400).json({ success: false, message: 'Faltan parámetros fechaInicio o fechaFin' });
-        return;
+        throw new BadRequestError('Faltan parámetros fechaInicio o fechaFin');
       }
 
-      const servicios = await this.dashboardService.getServiciosPopulares(clinicaId, fechaInicio, fechaFin);
+      const servicios = await this.dashboardService.getServiciosPopulares(clinicaId!, fechaInicio, fechaFin);
       res.status(200).json({ success: true, data: servicios });
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Error al cargar servicios populares' });
+      next(error);
     }
   };
 
-  getTasaAsistencia = async (req: AuthRequest, res: Response): Promise<void> => {
+  getTasaAsistencia = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-      if (!req.usuario) return;
+      if (!req.usuario) throw new UnauthorizedError('Sesión no válida');
       const { clinicaId } = req.usuario;
       const { fechaInicio, fechaFin } = req.query;
 
       if (typeof fechaInicio !== 'string' || typeof fechaFin !== 'string') {
-        res.status(400).json({ success: false, message: 'Faltan parámetros fechaInicio o fechaFin' });
-        return;
+        throw new BadRequestError('Faltan parámetros fechaInicio o fechaFin');
       }
 
-      const tasas = await this.dashboardService.getTasaAsistencia(clinicaId, fechaInicio, fechaFin);
+      const tasas = await this.dashboardService.getTasaAsistencia(clinicaId!, fechaInicio, fechaFin);
       res.status(200).json({ success: true, data: tasas });
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Error al cargar la tasa de asistencia' });
+      next(error);
     }
   };
 
-  getNuevosPacientes = async (req: AuthRequest, res: Response): Promise<void> => {
+  getNuevosPacientes = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-      if (!req.usuario) return;
+      if (!req.usuario) throw new UnauthorizedError('Sesión no válida');
       const { clinicaId } = req.usuario;
       const { fechaInicio, fechaFin } = req.query;
 
       if (typeof fechaInicio !== 'string' || typeof fechaFin !== 'string') {
-        res.status(400).json({ success: false, message: 'Faltan parámetros de fecha' });
-        return;
+        throw new BadRequestError('Faltan parámetros de fecha');
       }
 
-      const crecimiento = await this.dashboardService.getNuevosPacientes(clinicaId, fechaInicio, fechaFin);
+      const crecimiento = await this.dashboardService.getNuevosPacientes(clinicaId!, fechaInicio, fechaFin);
       res.status(200).json({ success: true, data: crecimiento });
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Error al calcular crecimiento de pacientes' });
+      next(error);
     }
   };
 }

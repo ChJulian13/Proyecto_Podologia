@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { ClinicaRepository } from '../../repositories/clinica/clinica.repository.js';
+import { NotFoundError } from '../../common/errors/domain.errors.js';
 import { type CreateClinicaDTO, type UpdateClinicaDTO, type ClinicaRow } from '../../domain/clinica/clinica.domain.js';
 
 export class ClinicaService {
@@ -12,7 +13,7 @@ export class ClinicaService {
 
   async getById(id: string): Promise<ClinicaRow> {
     const clinica = await this.clinicaRepository.findById(id);
-    if (!clinica) throw new Error('CLINICA_NOT_FOUND');
+    if (!clinica) throw new NotFoundError('Clínica');
     return clinica;
   }
 
@@ -43,7 +44,7 @@ export class ClinicaService {
 
   async update(id: string, data: UpdateClinicaDTO): Promise<ClinicaRow> {
     const existing = await this.clinicaRepository.findById(id);
-    if (!existing) throw new Error('CLINICA_NOT_FOUND');
+    if (!existing) throw new NotFoundError('Clínica');
 
     await this.clinicaRepository.update(id, {
       nombre: data.nombre ?? existing.nombre,
@@ -69,7 +70,7 @@ export class ClinicaService {
   // Ahora sirve para apagar (soft delete) y encender clínicas
   async toggleStatus(id: string, activar: boolean): Promise<void> {
     const existing = await this.clinicaRepository.findById(id);
-    if (!existing) throw new Error('CLINICA_NOT_FOUND');
+    if (!existing) throw new NotFoundError('Clínica');
 
     await this.clinicaRepository.updateStatus(id, activar);
   }
