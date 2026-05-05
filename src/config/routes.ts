@@ -12,6 +12,7 @@ import citaRoutes from '../routes/cita/cita.routes.js';
 import notaClinicaRoutes from '../routes/nota_clinica/nota_clinica.routes.js';
 import imagenRoutes from '../routes/imagen_paciente/imagen_paciente.routes.js';
 import facturaRoutes from '../routes/factura/factura.routes.js';
+import anamnesisRoutes from '../routes/anamnesis/anamnesis.routes.js';
 import dashboardRoutes from '../routes/dashboard/dashboard.routes.js';
 import platformAdminRoutes from '../routes/platform_admin/platform_admin.routes.js';
 import sepomexRoutes from '../integrations/sepomex/sepomex.routes.js';
@@ -35,6 +36,7 @@ export const registerRoutes = (app: Application): void => {
   apiProtegida.use('/notas-clinicas', notaClinicaRoutes);
   apiProtegida.use('/imagenes-paciente', imagenRoutes);
   apiProtegida.use('/facturas', facturaRoutes);
+  apiProtegida.use('/anamnesis', anamnesisRoutes);
   apiProtegida.use('/dashboard', dashboardRoutes);
   apiProtegida.use('/usuarios', usuarioRoutes);
 
