@@ -19,6 +19,7 @@ import sepomexRoutes from '../integrations/sepomex/sepomex.routes.js';
 import categoriaInventarioRoutes from '../routes/categoria_inventario/categoria_inventario.routes.js';
 import inventarioRoutes from '../routes/inventario/inventario.routes.js';
 import ventaInventarioRoutes from '../routes/venta_inventario/venta_inventario.routes.js';
+import agendaRapidaRoutes from '../routes/agenda_rapida/agenda_rapida.routes.js';
 
 export const registerRoutes = (app: Application): void => {
   // Rutas públicas
@@ -45,6 +46,7 @@ export const registerRoutes = (app: Application): void => {
   apiProtegida.use('/categorias-inventario', categoriaInventarioRoutes);
   apiProtegida.use('/inventario', inventarioRoutes);
   apiProtegida.use('/ventas-inventario', ventaInventarioRoutes);
+  apiProtegida.use('/agenda-rapida', agendaRapidaRoutes);
 
   app.use('/api', apiProtegida);
 
