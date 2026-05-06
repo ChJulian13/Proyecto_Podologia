@@ -3,8 +3,9 @@ import { CitaRepository } from '../../repositories/cita/cita.repository.js';
 import { PacienteRepository } from '../../repositories/paciente/paciente.repository.js';
 import { UsuarioRepository } from '../../repositories/usuario/usuario.repository.js';
 import { ServicioRepository } from '../../repositories/servicio/servicio.repository.js';
-import { mapCitaRowToEntity, type CreateCitaDTO, type UpdateCitaDTO, type CitaEntity } from '../../domain/cita/cita.domain.js';
+import { mapCitaRowToEntity, type CreateCitaDTO, type UpdateCitaDTO, type CreateCitaRapidaDTO, type CitaEntity } from '../../domain/cita/cita.domain.js';
 import { NotFoundError, ConflictError, ValidationError } from '../../common/errors/domain.errors.js';
+import { pool } from '../../config/database.js';
 
 export class CitaService {
   private citaRepository = new CitaRepository();
@@ -43,9 +44,9 @@ export class CitaService {
     }
 
     // 2. Validar choque de horarios (Regla de negocio core)
-    const horaCompleta = `${data.hora_programada}:00`; 
+    const horaCompleta = `${data.hora_programada}:00`;
     const conflicto = await this.citaRepository.findConflict(data.podologo_id, data.fecha_programada, horaCompleta);
-    
+
     if (conflicto) {
       throw new ConflictError('El podólogo ya tiene una cita asignada en ese horario');
     }
@@ -68,6 +69,50 @@ export class CitaService {
     return await this.getById(newId);
   }
 
+  async agendarCitaRapida(data: CreateCitaRapidaDTO): Promise<{ pacienteId: string, citaId: string }> {
+    const connection = await pool.getConnection();
+
+    try {
+      await connection.beginTransaction();
+
+      const nuevoPacienteId = crypto.randomUUID();
+      const nuevaCitaId = crypto.randomUUID();
+
+      // 1. Registrar al paciente exprés
+      await this.pacienteRepository.createWithTransaction(
+        connection,
+        nuevoPacienteId,
+        data.clinica_id,
+        data.paciente_nuevo.nombre,
+        data.paciente_nuevo.primer_apellido,
+        data.paciente_nuevo.telefono
+      );
+
+      // 2. Agendar la cita usando el ID recién creado
+      await this.citaRepository.createWithTransaction(
+        connection,
+        nuevaCitaId,
+        data.clinica_id,
+        nuevoPacienteId,
+        data.podologo_id,
+        data.servicio_id ?? null,
+        data.fecha_programada,
+        data.hora_programada,
+        data.duracion_minutos ?? 60,
+        data.notas ?? null
+      );
+
+      await connection.commit();
+      return { pacienteId: nuevoPacienteId, citaId: nuevaCitaId };
+
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+  }
+
   async update(id: string, data: UpdateCitaDTO): Promise<CitaEntity> {
     const existingCita = await this.citaRepository.findById(id);
     if (!existingCita) throw new NotFoundError('Cita');
@@ -77,11 +122,11 @@ export class CitaService {
     const newPodologoId = data.podologo_id ?? existingCita.podologo_id;
     const newServicioId = data.servicio_id !== undefined ? data.servicio_id : existingCita.servicio_id;
     const newFecha = data.fecha_programada ?? (existingCita.fecha_programada instanceof Date ? existingCita.fecha_programada.toISOString().substring(0, 10) : String(existingCita.fecha_programada));
-    
+
     // Formatear hora si fue enviada, si no, usar la existente
     let newHora = existingCita.hora_programada;
     if (data.hora_programada) {
-       newHora = `${data.hora_programada}:00`;
+      newHora = `${data.hora_programada}:00`;
     }
 
     const newDuracion = data.duracion_minutos ?? existingCita.duracion_minutos;
@@ -95,7 +140,7 @@ export class CitaService {
     }
 
     await this.citaRepository.update(id, newPacienteId, newPodologoId, newServicioId, newFecha, newHora, newDuracion, newEstado, newNotas);
-    
+
     return await this.getById(id);
   }
 
@@ -108,7 +153,7 @@ export class CitaService {
 
   async getTodayCitas(clinicaId: string, usuarioId: string, rol: string): Promise<CitaEntity[]> {
     let rows;
-    
+
     if (rol === 'PODOLOGO') {
       rows = await this.citaRepository.findToday(clinicaId, usuarioId);
     } else {
