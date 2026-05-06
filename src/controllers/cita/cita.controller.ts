@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { CitaService } from '../../services/cita/cita.service.js';
-import { CreateCitaSchema, UpdateCitaSchema, CreateCitaRapidaSchema } from '../../domain/cita/cita.domain.js';
+import { CreateCitaSchema, UpdateCitaSchema } from '../../domain/cita/cita.domain.js';
 import { ValidationError } from '../../common/errors/domain.errors.js';
 
 export class CitaController {
@@ -31,21 +31,6 @@ export class CitaController {
         success: true,
         message: 'Cita agendada exitosamente',
         data: nuevaCita
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  agendarCitaRapida = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const validatedData = CreateCitaRapidaSchema.parse(req.body);
-      const resultado = await this.citaService.agendarCitaRapida(validatedData);
-
-      res.status(201).json({
-        success: true,
-        message: 'Paciente registrado y cita agendada exitosamente',
-        data: resultado
       });
     } catch (error) {
       next(error);
