@@ -1,8 +1,9 @@
 import { pool } from '../../config/database.js';
 import type { PacienteRow } from '../../domain/paciente/paciente.domain.js';
+import type { PoolConnection } from 'mysql2/promise';
 
 export class PacienteRepository {
-  
+
   private selectQuery = `
     SELECT 
       p.*, 
@@ -38,13 +39,28 @@ export class PacienteRepository {
         fecha_nacimiento, discapacidad, alergias, notas
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        data.id, data.clinica_id, data.nombre, data.primer_apellido, 
-        data.segundo_apellido ?? null, data.telefono, data.correo ?? null, 
-        data.codigo_postal ?? null, data.estado ?? null, data.municipio ?? null, 
+        data.id, data.clinica_id, data.nombre, data.primer_apellido,
+        data.segundo_apellido ?? null, data.telefono, data.correo ?? null,
+        data.codigo_postal ?? null, data.estado ?? null, data.municipio ?? null,
         data.ciudad ?? null, data.colonia ?? null, data.calle_y_numero ?? null,
-        data.fecha_nacimiento ?? null, data.discapacidad ?? null, 
+        data.fecha_nacimiento ?? null, data.discapacidad ?? null,
         data.alergias ?? null, data.notas ?? null
       ] as any[]
+    );
+  }
+
+  async createWithTransaction(
+    connection: PoolConnection,
+    id: string,
+    clinicaId: string,
+    nombre: string,
+    primerApellido: string,
+    telefono: string
+  ): Promise<void> {
+    await connection.execute(
+      `INSERT INTO pacientes (id, clinica_id, nombre, primer_apellido, telefono) 
+      VALUES (?, ?, ?, ?, ?)`,
+      [id, clinicaId, nombre, primerApellido, telefono]
     );
   }
 
@@ -57,12 +73,12 @@ export class PacienteRepository {
         fecha_nacimiento = ?, discapacidad = ?, alergias = ?, notas = ?
        WHERE id = ?`,
       [
-        data.nombre, data.primer_apellido, data.segundo_apellido ?? null, 
-        data.telefono, data.correo ?? null, 
-        data.codigo_postal ?? null, data.estado ?? null, data.municipio ?? null, 
+        data.nombre, data.primer_apellido, data.segundo_apellido ?? null,
+        data.telefono, data.correo ?? null,
+        data.codigo_postal ?? null, data.estado ?? null, data.municipio ?? null,
         data.ciudad ?? null, data.colonia ?? null, data.calle_y_numero ?? null,
-        data.fecha_nacimiento ?? null, data.discapacidad ?? null, 
-        data.alergias ?? null, data.notas ?? null, 
+        data.fecha_nacimiento ?? null, data.discapacidad ?? null,
+        data.alergias ?? null, data.notas ?? null,
         id
       ] as any[]
     );
