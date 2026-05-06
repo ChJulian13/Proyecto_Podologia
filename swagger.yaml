@@ -18,6 +18,804 @@ components:
       name: access_token
       
   schemas:
+    # --- CATEGORÍAS INVENTARIO ---
+    CategoriaInventarioEntity:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nombre:
+          type: string
+          example: "Consumible Médico"
+        descripcion:
+          type: string
+          nullable: true
+        estaActivo:
+          type: boolean
+        fechaCreacion:
+          type: string
+          format: date-time
+
+    CreateCategoriaInventarioDTO:
+      type: object
+      required:
+        - nombre
+      properties:
+        nombre:
+          type: string
+          minLength: 2
+          maxLength: 50
+          example: "Insumos"
+        descripcion:
+          type: string
+          maxLength: 255
+          nullable: true
+
+    UpdateCategoriaInventarioDTO:
+      type: object
+      properties:
+        nombre:
+          type: string
+          minLength: 2
+          maxLength: 50
+        descripcion:
+          type: string
+          maxLength: 255
+          nullable: true
+    PacienteRapidoDTO:
+      type: object
+      required:
+        - nombre
+        - primer_apellido
+        - telefono
+      properties:
+        nombre:
+          type: string
+        primer_apellido:
+          type: string
+        telefono:
+          type: string
+
+    CreateCitaRapidaDTO:
+      type: object
+      required:
+        - clinica_id
+        - podologo_id
+        - fecha_programada
+        - hora_programada
+        - paciente_nuevo
+      properties:
+        clinica_id:
+          type: string
+          format: uuid
+        podologo_id:
+          type: string
+          format: uuid
+        servicio_id:
+          type: string
+          format: uuid
+          nullable: true
+        fecha_programada:
+          type: string
+          format: date
+        hora_programada:
+          type: string
+          example: "16:30"
+        duracion_minutos:
+          type: integer
+          default: 60
+        notas:
+          type: string
+          nullable: true
+        paciente_nuevo:
+          $ref: '#/components/schemas/PacienteRapidoDTO'
+
+    # --- INVENTARIO ---
+    InventarioEntity:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        clinicaId:
+          type: string
+          format: uuid
+        categoria:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            nombre:
+              type: string
+        nombre:
+          type: string
+          example: "Crema de Urea 40%"
+        descripcion:
+          type: string
+          nullable: true
+        stockCantidad:
+          type: integer
+          example: 50
+        precioCompra:
+          type: number
+          format: float
+          nullable: true
+          example: 120.50
+        precioVenta:
+          type: number
+          format: float
+          nullable: true
+          example: 250.00
+        fechaCaducidad:
+          type: string
+          format: date
+          nullable: true
+        ubicacion:
+          type: string
+          nullable: true
+          example: "Vitrina 1"
+        estaActivo:
+          type: boolean
+        fechaCreacion:
+          type: string
+          format: date-time
+        fechaActualizacion:
+          type: string
+          format: date-time
+
+    CreateInventarioDTO:
+      type: object
+      required:
+        - clinica_id
+        - categoria_id
+        - nombre
+      properties:
+        clinica_id:
+          type: string
+          format: uuid
+        categoria_id:
+          type: string
+          format: uuid
+        nombre:
+          type: string
+          minLength: 2
+        descripcion:
+          type: string
+          nullable: true
+        stock_cantidad:
+          type: integer
+          minimum: 0
+          default: 0
+        precio_compra:
+          type: number
+          format: float
+          minimum: 0
+          nullable: true
+        precio_venta:
+          type: number
+          format: float
+          minimum: 0
+          nullable: true
+        fecha_caducidad:
+          type: string
+          format: date
+          nullable: true
+        ubicacion:
+          type: string
+          maxLength: 255
+          nullable: true
+
+    UpdateInventarioDTO:
+      type: object
+      properties:
+        categoria_id:
+          type: string
+          format: uuid
+        nombre:
+          type: string
+          minLength: 2
+        descripcion:
+          type: string
+          nullable: true
+        precio_compra:
+          type: number
+          format: float
+          minimum: 0
+          nullable: true
+        precio_venta:
+          type: number
+          format: float
+          minimum: 0
+          nullable: true
+        fecha_caducidad:
+          type: string
+          format: date
+          nullable: true
+        ubicacion:
+          type: string
+          maxLength: 255
+          nullable: true
+
+    AjusteStockDTO:
+      type: object
+      required:
+        - cantidad
+        - tipo
+      properties:
+        cantidad:
+          type: integer
+          minimum: 1
+        tipo:
+          type: string
+          enum: [ENTRADA, SALIDA]
+        motivo:
+          type: string
+          nullable: true
+
+    # --- VENTAS INVENTARIO ---
+    VentaInventarioEntity:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        clinicaId:
+          type: string
+          format: uuid
+        pacienteId:
+          type: string
+          format: uuid
+          nullable: true
+        facturaId:
+          type: string
+          format: uuid
+          nullable: true
+        inventarioItem:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            nombre:
+              type: string
+        cantidad:
+          type: integer
+        precioVenta:
+          type: number
+          format: float
+        fechaVenta:
+          type: string
+          format: date-time
+        estaCancelada:
+          type: boolean
+
+    ItemVentaDTO:
+      type: object
+      required:
+        - inventario_item_id
+        - cantidad
+        - precio_venta
+      properties:
+        inventario_item_id:
+          type: string
+          format: uuid
+        cantidad:
+          type: integer
+          minimum: 1
+        precio_venta:
+          type: number
+          format: float
+          minimum: 0
+
+    CreateVentaMasivaDTO:
+      type: object
+      required:
+        - clinica_id
+        - productos
+      properties:
+        clinica_id:
+          type: string
+          format: uuid
+        paciente_id:
+          type: string
+          format: uuid
+          nullable: true
+        factura_id:
+          type: string
+          format: uuid
+          nullable: true
+        productos:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ItemVentaDTO'
+    AnamnesisEntity:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        clinicaId:
+          type: string
+          format: uuid
+        pacienteId:
+          type: string
+          format: uuid
+        paciente:
+          type: object
+          properties:
+            nombre:
+              type: string
+            primerApellido:
+              type: string
+            segundoApellido:
+              type: string
+              nullable: true
+            nombreCompleto:
+              type: string
+            telefono:
+              type: string
+            correo:
+              type: string
+              nullable: true
+            fechaNacimiento:
+              type: string
+              format: date
+              nullable: true
+            discapacidad:
+              type: string
+              nullable: true
+            alergias:
+              type: string
+              nullable: true
+            notas:
+              type: string
+              nullable: true
+            direccion:
+              type: object
+              properties:
+                codigoPostal:
+                  type: string
+                  nullable: true
+                estado:
+                  type: string
+                  nullable: true
+                municipio:
+                  type: string
+                  nullable: true
+                ciudad:
+                  type: string
+                  nullable: true
+                colonia:
+                  type: string
+                  nullable: true
+                calleYNumero:
+                  type: string
+                  nullable: true
+        podologoVerificadorId:
+          type: string
+          format: uuid
+          nullable: true
+        fechaVerificacion:
+          type: string
+          format: date-time
+          nullable: true
+        profesion:
+          type: string
+          nullable: true
+        contactoEmergenciaNombre:
+          type: string
+          nullable: true
+        contactoEmergenciaTelefono:
+          type: string
+          nullable: true
+        comoNosEncontro:
+          type: string
+          enum: [EVENTO, INSTAGRAM, INTERNET, RECOMENDACION, OTRO]
+          nullable: true
+        tomaMedicamentos:
+          type: boolean
+        listaMedicamentos:
+          type: string
+          nullable: true
+        estaEmbarazada:
+          type: boolean
+        semanaEmbarazo:
+          type: integer
+          nullable: true
+        embarazoAltoRiesgo:
+          type: boolean
+        embarazoDetalles:
+          type: string
+          nullable: true
+        tuvoCirugiasLesiones:
+          type: boolean
+        listaCirugiasLesiones:
+          type: string
+          nullable: true
+        haRecibidoReflexologia:
+          type: boolean
+        motivoConsulta:
+          type: string
+          nullable: true
+        objetivosSesion:
+          type: string
+          nullable: true
+        condicionCancer:
+          type: boolean
+        condicionDolorCabeza:
+          type: boolean
+        condicionArtritis:
+          type: boolean
+        condicionDiabetes:
+          type: boolean
+        condicionPresionAlterada:
+          type: boolean
+        condicionNeuropatia:
+          type: boolean
+        condicionFibromialgia:
+          type: boolean
+        condicionInfarto:
+          type: boolean
+        condicionEnfermedadRenal:
+          type: boolean
+        condicionTrombosis:
+          type: boolean
+        condicionEntumecimiento:
+          type: boolean
+        condicionEsguinces:
+          type: boolean
+        condicionExplicacion:
+          type: string
+          nullable: true
+        mapaCorporalUrl:
+          type: string
+          nullable: true
+        escalaSueno:
+          type: integer
+          minimum: 1
+          maximum: 5
+          nullable: true
+        escalaEnergia:
+          type: integer
+          minimum: 1
+          maximum: 5
+          nullable: true
+        escalaEstres:
+          type: integer
+          minimum: 1
+          maximum: 5
+          nullable: true
+        escalaNutricion:
+          type: integer
+          minimum: 1
+          maximum: 5
+          nullable: true
+        escalaEjercicio:
+          type: integer
+          minimum: 1
+          maximum: 5
+          nullable: true
+        aceptaTerminos:
+          type: boolean
+        lugarFirma:
+          type: string
+          nullable: true
+        fechaCreacion:
+          type: string
+          format: date-time
+        fechaActualizacion:
+          type: string
+          format: date-time
+
+    CreateAnamnesisDTO:
+      type: object
+      required:
+        - clinica_id
+        - paciente_id
+      properties:
+        clinica_id:
+          type: string
+          format: uuid
+        paciente_id:
+          type: string
+          format: uuid
+        correo:
+          type: string
+          format: email
+          nullable: true
+        fecha_nacimiento:
+          type: string
+          format: date
+          nullable: true
+        codigoPostal:
+          type: string
+          pattern: '^\d{5}$'
+          nullable: true
+        estado:
+          type: string
+          nullable: true
+        municipio:
+          type: string
+          nullable: true
+        ciudad:
+          type: string
+          nullable: true
+        colonia:
+          type: string
+          nullable: true
+        calleYNumero:
+          type: string
+          nullable: true
+        profesion:
+          type: string
+          maxLength: 150
+          nullable: true
+        contacto_emergencia_nombre:
+          type: string
+          maxLength: 150
+          nullable: true
+        contacto_emergencia_telefono:
+          type: string
+          maxLength: 20
+          nullable: true
+        como_nos_encontro:
+          type: string
+          enum: [EVENTO, INSTAGRAM, INTERNET, RECOMENDACION, OTRO]
+          nullable: true
+        toma_medicamentos:
+          type: boolean
+          default: false
+        lista_medicamentos:
+          type: string
+          nullable: true
+        esta_embarazada:
+          type: boolean
+          default: false
+        semana_embarazo:
+          type: integer
+          minimum: 1
+          maximum: 42
+          nullable: true
+        embarazo_alto_riesgo:
+          type: boolean
+          default: false
+        embarazo_detalles:
+          type: string
+          nullable: true
+        tuvo_cirugias_lesiones:
+          type: boolean
+          default: false
+        lista_cirugias_lesiones:
+          type: string
+          nullable: true
+        ha_recibido_reflexologia:
+          type: boolean
+          default: false
+        motivo_consulta:
+          type: string
+          nullable: true
+        objetivos_sesion:
+          type: string
+          nullable: true
+        condicion_cancer:
+          type: boolean
+          default: false
+        condicion_dolor_cabeza:
+          type: boolean
+          default: false
+        condicion_artritis:
+          type: boolean
+          default: false
+        condicion_diabetes:
+          type: boolean
+          default: false
+        condicion_presion_alterada:
+          type: boolean
+          default: false
+        condicion_neuropatia:
+          type: boolean
+          default: false
+        condicion_fibromialgia:
+          type: boolean
+          default: false
+        condicion_infarto:
+          type: boolean
+          default: false
+        condicion_enfermedad_renal:
+          type: boolean
+          default: false
+        condicion_trombosis:
+          type: boolean
+          default: false
+        condicion_entumecimiento:
+          type: boolean
+          default: false
+        condicion_esguinces:
+          type: boolean
+          default: false
+        condicion_explicacion:
+          type: string
+          nullable: true
+        mapa_corporal_url:
+          type: string
+          maxLength: 255
+          nullable: true
+        escala_sueno:
+          type: integer
+          minimum: 1
+          maximum: 5
+          nullable: true
+        escala_energia:
+          type: integer
+          minimum: 1
+          maximum: 5
+          nullable: true
+        escala_estres:
+          type: integer
+          minimum: 1
+          maximum: 5
+          nullable: true
+        escala_nutricion:
+          type: integer
+          minimum: 1
+          maximum: 5
+          nullable: true
+        escala_ejercicio:
+          type: integer
+          minimum: 1
+          maximum: 5
+          nullable: true
+        acepta_terminos:
+          type: boolean
+          default: false
+        lugar_firma:
+          type: string
+          maxLength: 150
+          nullable: true
+
+    UpdateAnamnesisDTO:
+      type: object
+      description: Copia parcial de CreateAnamnesisDTO, omitiendo clinica_id y paciente_id.
+      properties:
+        correo:
+          type: string
+          format: email
+          nullable: true
+        fecha_nacimiento:
+          type: string
+          format: date
+          nullable: true
+        codigoPostal:
+          type: string
+          pattern: '^\d{5}$'
+          nullable: true
+        estado:
+          type: string
+          nullable: true
+        municipio:
+          type: string
+          nullable: true
+        ciudad:
+          type: string
+          nullable: true
+        colonia:
+          type: string
+          nullable: true
+        calleYNumero:
+          type: string
+          nullable: true
+        profesion:
+          type: string
+          maxLength: 150
+          nullable: true
+        contacto_emergencia_nombre:
+          type: string
+          maxLength: 150
+          nullable: true
+        contacto_emergencia_telefono:
+          type: string
+          maxLength: 20
+          nullable: true
+        como_nos_encontro:
+          type: string
+          enum: [EVENTO, INSTAGRAM, INTERNET, RECOMENDACION, OTRO]
+          nullable: true
+        toma_medicamentos:
+          type: boolean
+        lista_medicamentos:
+          type: string
+          nullable: true
+        esta_embarazada:
+          type: boolean
+        semana_embarazo:
+          type: integer
+          minimum: 1
+          maximum: 42
+          nullable: true
+        embarazo_alto_riesgo:
+          type: boolean
+        embarazo_detalles:
+          type: string
+          nullable: true
+        tuvo_cirugias_lesiones:
+          type: boolean
+        lista_cirugias_lesiones:
+          type: string
+          nullable: true
+        ha_recibido_reflexologia:
+          type: boolean
+        motivo_consulta:
+          type: string
+          nullable: true
+        objetivos_sesion:
+          type: string
+          nullable: true
+        condicion_cancer:
+          type: boolean
+        condicion_dolor_cabeza:
+          type: boolean
+        condicion_artritis:
+          type: boolean
+        condicion_diabetes:
+          type: boolean
+        condicion_presion_alterada:
+          type: boolean
+        condicion_neuropatia:
+          type: boolean
+        condicion_fibromialgia:
+          type: boolean
+        condicion_infarto:
+          type: boolean
+        condicion_enfermedad_renal:
+          type: boolean
+        condicion_trombosis:
+          type: boolean
+        condicion_entumecimiento:
+          type: boolean
+        condicion_esguinces:
+          type: boolean
+        condicion_explicacion:
+          type: string
+          nullable: true
+        mapa_corporal_url:
+          type: string
+          maxLength: 255
+          nullable: true
+        escala_sueno:
+          type: integer
+          minimum: 1
+          maximum: 5
+          nullable: true
+        escala_energia:
+          type: integer
+          minimum: 1
+          maximum: 5
+          nullable: true
+        escala_estres:
+          type: integer
+          minimum: 1
+          maximum: 5
+          nullable: true
+        escala_nutricion:
+          type: integer
+          minimum: 1
+          maximum: 5
+          nullable: true
+        escala_ejercicio:
+          type: integer
+          minimum: 1
+          maximum: 5
+          nullable: true
+        acepta_terminos:
+          type: boolean
+        lugar_firma:
+          type: string
+          maxLength: 150
+          nullable: true
+
     CitaEntity:
       type: object
       required:
@@ -521,6 +1319,7 @@ components:
         fechaCreacion:
           type: string
           format: date-time
+
     IngresoEntity:
       type: object
       properties:
@@ -673,6 +1472,115 @@ components:
 # 2. RUTAS (Endpoints)
 # ==========================================
 paths:
+  # --- ANAMNESIS ---
+  /api/anamnesis/paciente/{pacienteId}:
+    get:
+      summary: Obtiene la anamnesis y los datos combinados de un paciente
+      description: Retorna el historial médico completo (AnamnesisEntity) fusionado con los datos demográficos del paciente.
+      tags:
+        - Anamnesis
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: pacienteId
+          required: true
+          description: UUID del paciente
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Anamnesis obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/AnamnesisEntity'
+        '404':
+          description: Paciente o Anamnesis no encontrada
+
+  /api/anamnesis:
+    post:
+      summary: Crea una nueva anamnesis (Paso 2 del registro)
+      description: Endpoint híbrido transaccional. Actualiza la tabla pacientes e inserta el historial clínico en la tabla anamnesis_paciente.
+      tags:
+        - Anamnesis
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAnamnesisDTO'
+      responses:
+        '201':
+          description: Anamnesis registrada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Anamnesis registrada exitosamente"
+                  data:
+                    $ref: '#/components/schemas/AnamnesisEntity'
+        '400':
+          description: Error de validación (Zod)
+        '409':
+          description: El paciente ya tiene una anamnesis registrada
+
+  /api/anamnesis/{id}:
+    patch:
+      summary: Actualiza parcialmente la anamnesis o los datos del paciente
+      description: Recibe un payload parcial para actualizar dinámicamente cualquier campo médico o demográfico mediante una transacción SQL.
+      tags:
+        - Anamnesis
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: UUID de la anamnesis (No del paciente)
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAnamnesisDTO'
+      responses:
+        '200':
+          description: Anamnesis actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Anamnesis actualizada"
+                  data:
+                    $ref: '#/components/schemas/AnamnesisEntity'
+        '404':
+          description: Anamnesis no encontrada
+
   # --- AUTENTICACIÓN ---
   /api/auth/login:
     post:
@@ -827,6 +1735,43 @@ paths:
           description: Cita agendada exitosamente.
         '400':
           description: Error de validación Zod.
+  
+  /api/citas/rapida:
+    post:
+      summary: Agendar Cita Rápida (Paciente Nuevo)
+      description: Crea un registro de paciente exprés y agenda su cita en una sola transacción.
+      tags:
+        - Citas
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCitaRapidaDTO'
+      responses:
+        '201':
+          description: Cita y paciente creados exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      pacienteId:
+                        type: string
+                        format: uuid
+                      citaId:
+                        type: string
+                        format: uuid
 
   /api/citas/hoy:
     get:
@@ -2289,3 +3234,308 @@ paths:
                     $ref: '#/components/schemas/DireccionInfoEntity'
         '404':
           description: Código postal no encontrado.
+  
+  # --- CATEGORÍAS INVENTARIO ---
+  /api/categorias-inventario:
+    get:
+      summary: Obtener todas las categorías de inventario
+      tags:
+        - Categorías Inventario
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Lista de categorías activas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CategoriaInventarioEntity'
+    post:
+      summary: Crear una nueva categoría
+      tags:
+        - Categorías Inventario
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCategoriaInventarioDTO'
+      responses:
+        '201':
+          description: Categoría creada exitosamente
+
+  /api/categorias-inventario/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: Obtener una categoría por ID
+      tags:
+        - Categorías Inventario
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Detalle de la categoría
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/CategoriaInventarioEntity'
+    patch:
+      summary: Actualizar una categoría
+      tags:
+        - Categorías Inventario
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCategoriaInventarioDTO'
+      responses:
+        '200':
+          description: Categoría actualizada
+    delete:
+      summary: Desactivar una categoría (Soft delete)
+      tags:
+        - Categorías Inventario
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Categoría desactivada
+        '409':
+          description: Conflicto - Existen productos usando esta categoría
+
+  # --- INVENTARIO ---
+  /api/inventario/clinica/{clinicaId}:
+    get:
+      summary: Obtener todo el inventario de una clínica
+      tags:
+        - Inventario
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: clinicaId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Lista de artículos de la clínica
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/InventarioEntity'
+
+  /api/inventario/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: Obtener un artículo por ID
+      tags:
+        - Inventario
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Detalle del artículo
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/InventarioEntity'
+    patch:
+      summary: Actualizar información general de un artículo
+      tags:
+        - Inventario
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInventarioDTO'
+      responses:
+        '200':
+          description: Artículo actualizado
+    delete:
+      summary: Desactivar un artículo (Soft delete)
+      tags:
+        - Inventario
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Artículo desactivado
+
+  /api/inventario:
+    post:
+      summary: Registrar un nuevo artículo en inventario
+      tags:
+        - Inventario
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInventarioDTO'
+      responses:
+        '201':
+          description: Artículo registrado exitosamente
+
+  /api/inventario/{id}/stock:
+    patch:
+      summary: Ajustar stock manualmente (Entradas/Salidas)
+      tags:
+        - Inventario
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AjusteStockDTO'
+      responses:
+        '200':
+          description: Stock ajustado exitosamente
+        '400':
+          description: Stock insuficiente para realizar salida
+
+  # --- VENTAS INVENTARIO ---
+  /api/ventas-inventario/factura/{facturaId}:
+    get:
+      summary: Obtener artículos vendidos en una factura
+      tags:
+        - Ventas Inventario
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: facturaId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Lista de ventas de la factura
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/VentaInventarioEntity'
+
+  /api/ventas-inventario/clinica/{clinicaId}:
+    get:
+      summary: Obtener historial completo de ventas de una clínica
+      tags:
+        - Ventas Inventario
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: clinicaId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Historial de ventas
+
+  /api/ventas-inventario:
+    post:
+      summary: Registrar Venta Múltiple (Carrito de Compras)
+      description: Operación transaccional. Registra múltiples productos y descuenta stock simultáneamente.
+      tags:
+        - Ventas Inventario
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVentaMasivaDTO'
+      responses:
+        '201':
+          description: Ventas registradas exitosamente
+        '400':
+          description: Stock insuficiente en alguno de los productos
+
+  /api/ventas-inventario/{id}/cancelar:
+    patch:
+      summary: Cancelar una venta y revertir el stock
+      description: Operación transaccional para anular venta y reabastecer el inventario físico.
+      tags:
+        - Ventas Inventario
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Venta cancelada y stock restaurado
+        '409':
+          description: Conflicto - Esta venta ya fue cancelada
