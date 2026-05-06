@@ -1,8 +1,9 @@
 import { pool } from '../../config/database.js';
 import type { CitaRow, EstadoCita } from '../../domain/cita/cita.domain.js';
+import type { PoolConnection } from 'mysql2/promise';
 
 export class CitaRepository {
-  
+
   private selectQuery = `
     SELECT 
       c.*,
@@ -54,8 +55,8 @@ export class CitaRepository {
   }
 
   async create(
-    id: string, clinicaId: string, pacienteId: string, podologoId: string, 
-    servicioId: string | null, fecha: string, hora: string, 
+    id: string, clinicaId: string, pacienteId: string, podologoId: string,
+    servicioId: string | null, fecha: string, hora: string,
     duracion: number, notas: string | null
   ): Promise<void> {
     await pool.execute(
@@ -66,8 +67,28 @@ export class CitaRepository {
     );
   }
 
+  async createWithTransaction(
+    connection: PoolConnection,
+    id: string,
+    clinicaId: string,
+    pacienteId: string,
+    podologoId: string,
+    servicioId: string | null,
+    fechaProgramada: string,
+    horaProgramada: string,
+    duracionMinutos: number,
+    notas: string | null
+  ): Promise<void> {
+    await connection.execute(
+      `INSERT INTO citas 
+      (id, clinica_id, paciente_id, podologo_id, servicio_id, fecha_programada, hora_programada, duracion_minutos, notas) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, clinicaId, pacienteId, podologoId, servicioId, fechaProgramada, horaProgramada, duracionMinutos, notas]
+    );
+  }
+
   async update(
-    id: string, pacienteId: string, podologoId: string, servicioId: string | null, 
+    id: string, pacienteId: string, podologoId: string, servicioId: string | null,
     fecha: string, hora: string, duracion: number, estado: EstadoCita, notas: string | null
   ): Promise<void> {
     await pool.execute(
