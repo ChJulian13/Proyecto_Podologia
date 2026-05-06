@@ -44,7 +44,8 @@ export class CitaService {
 
     // 2. Validar choque de horarios (Regla de negocio core)
     const horaCompleta = `${data.hora_programada}:00`;
-    const conflicto = await this.citaRepository.findConflict(data.podologo_id, data.fecha_programada, horaCompleta);
+    const duracionEstimada = data.duracion_minutos ?? 60;
+    const conflicto = await this.citaRepository.findConflict(data.podologo_id, data.fecha_programada, horaCompleta, duracionEstimada);
 
     if (conflicto) {
       throw new ConflictError('El podólogo ya tiene una cita asignada en ese horario');
@@ -90,7 +91,7 @@ export class CitaService {
 
     // Si se cambió la fecha, la hora o el doctor, verificar conflictos
     if (data.fecha_programada || data.hora_programada || data.podologo_id) {
-      const conflicto = await this.citaRepository.findConflict(newPodologoId, newFecha, newHora, id);
+      const conflicto = await this.citaRepository.findConflict(newPodologoId, newFecha, newHora, newDuracion, id);
       if (conflicto) throw new ConflictError('El nuevo horario entra en conflicto con otra cita');
     }
 
