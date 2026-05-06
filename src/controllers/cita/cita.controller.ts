@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { CitaService } from '../../services/cita/cita.service.js';
-import { CreateCitaSchema, UpdateCitaSchema } from '../../domain/cita/cita.domain.js';
+import { CreateCitaSchema, UpdateCitaSchema, CreateCitaRapidaSchema } from '../../domain/cita/cita.domain.js';
 import { ValidationError } from '../../common/errors/domain.errors.js';
 
 export class CitaController {
@@ -26,11 +26,26 @@ export class CitaController {
       // Zod parse lanzará un ZodError si falla, el middleware lo atrapará
       const validatedData = CreateCitaSchema.parse(req.body);
       const nuevaCita = await this.citaService.create(validatedData);
-      
-      res.status(201).json({ 
-        success: true, 
-        message: 'Cita agendada exitosamente', 
-        data: nuevaCita 
+
+      res.status(201).json({
+        success: true,
+        message: 'Cita agendada exitosamente',
+        data: nuevaCita
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  agendarCitaRapida = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const validatedData = CreateCitaRapidaSchema.parse(req.body);
+      const resultado = await this.citaService.agendarCitaRapida(validatedData);
+
+      res.status(201).json({
+        success: true,
+        message: 'Paciente registrado y cita agendada exitosamente',
+        data: resultado
       });
     } catch (error) {
       next(error);
@@ -40,13 +55,13 @@ export class CitaController {
   update = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params as Record<string, string>;
-      
+
       if (typeof id !== 'string') {
         throw new ValidationError([{ path: ['id'], message: 'El ID de la cita es obligatorio y debe ser texto' }]);
       }
 
       const validatedData = UpdateCitaSchema.parse(req.body);
-      
+
       if (Object.keys(validatedData).length === 0) {
         throw new ValidationError([{ path: ['body'], message: 'No hay datos para actualizar' }]);
       }
@@ -61,7 +76,7 @@ export class CitaController {
   delete = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params as Record<string, string>;
-      
+
       if (typeof id !== 'string') {
         throw new ValidationError([{ path: ['id'], message: 'El ID de la cita es obligatorio y debe ser texto' }]);
       }
@@ -85,13 +100,13 @@ export class CitaController {
       }
 
       const citasHoy = await this.citaService.getTodayCitas(
-        usuario.clinicaId, 
-        usuario.id, 
+        usuario.clinicaId,
+        usuario.id,
         usuario.rol
       );
 
-      res.status(200).json({ 
-        success: true, 
+      res.status(200).json({
+        success: true,
         data: citasHoy,
         message: citasHoy.length === 0 ? 'No hay citas programadas para hoy' : 'Citas del día obtenidas'
       });
