@@ -19,11 +19,29 @@ export const CreateCitaSchema = z.object({
   notas: z.string().optional(),
 });
 
+export const CreatePacienteRapidoSchema = z.object({
+  nombre: z.string().min(2, "El nombre es obligatorio"),
+  primer_apellido: z.string().min(2, "El primer apellido es obligatorio"),
+  telefono: z.string().min(10, "El teléfono debe tener al menos 10 dígitos")
+});
+
+export const CreateCitaRapidaSchema = z.object({
+  clinica_id: z.string().uuid("El ID de la clínica debe ser un UUID válido"),
+  podologo_id: z.string().uuid("El ID del podólogo debe ser un UUID válido"),
+  servicio_id: z.string().uuid("El ID del servicio debe ser un UUID válido").optional().nullable(),
+  fecha_programada: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de fecha inválido (YYYY-MM-DD)"),
+  hora_programada: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Formato de hora inválido (HH:mm)"),
+  duracion_minutos: z.number().int().positive().optional().default(60),
+  notas: z.string().optional().nullable(),
+  paciente_nuevo: CreatePacienteRapidoSchema
+});
+
 export const UpdateCitaSchema = CreateCitaSchema.partial().extend({
   estado: CitaEstado.optional(),
 });
 
 export type CreateCitaDTO = z.infer<typeof CreateCitaSchema>;
+export type CreateCitaRapidaDTO = z.infer<typeof CreateCitaRapidaSchema>;
 export type UpdateCitaDTO = z.infer<typeof UpdateCitaSchema>;
 
 // ==========================================
@@ -35,8 +53,8 @@ export interface CitaRow {
   paciente_id: string;
   podologo_id: string;
   servicio_id: string | null;
-  fecha_programada: string | Date; 
-  hora_programada: string; 
+  fecha_programada: string | Date;
+  hora_programada: string;
   duracion_minutos: number;
   estado: EstadoCita;
   notas: string | null;
@@ -63,7 +81,7 @@ export interface CitaEntity {
     nombre: string;
     primerApellido: string;
     segundoApellido: string | null;
-    nombreCompleto: string; 
+    nombreCompleto: string;
   };
   podologo: {
     id: string;
@@ -76,8 +94,8 @@ export interface CitaEntity {
     id: string;
     nombre: string;
   } | null;
-  fechaProgramada: string; 
-  horaProgramada: string;  
+  fechaProgramada: string;
+  horaProgramada: string;
   duracionMinutos: number;
   estado: EstadoCita;
   notas: string | null;
