@@ -10,6 +10,5 @@ router.get('/clinica/:clinicaId', citaController.getAllByClinica);
 router.post('/', citaController.create);
 router.patch('/:id', citaController.update);
 router.delete('/:id', citaController.delete);
-router.post('/rapida', citaController.agendarCitaRapida);
 
 export default router;
