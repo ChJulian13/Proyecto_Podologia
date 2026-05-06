@@ -34,16 +34,28 @@ export class CitaRepository {
     return rows[0] ?? null;
   }
 
-  // Buscar choques de horario (No requiere JOIN, funciona igual)
-  async findConflict(podologoId: string, fecha: string, hora: string, ignorarCitaId?: string): Promise<CitaRow | null> {
+  // Buscar choques de horario (Evalúa superposición de intervalos de tiempo)
+  async findConflict(
+    podologoId: string,
+    fecha: string,
+    hora: string,
+    duracionMinutos: number,
+    ignorarCitaId?: string
+  ): Promise<CitaRow | null> {
+
     let query = `
       SELECT * FROM citas 
       WHERE podologo_id = ? 
         AND fecha_programada = ? 
-        AND hora_programada = ? 
         AND estado IN ('PROGRAMADA', 'CONFIRMADA')
+        /* La hora de inicio en BD debe ser menor a la hora de FIN de la nueva cita */
+        AND hora_programada < (CAST(? AS TIME) + INTERVAL ? MINUTE)
+        /* La hora de FIN en BD debe ser mayor a la hora de INICIO de la nueva cita */
+        AND (hora_programada + INTERVAL duracion_minutos MINUTE) > CAST(? AS TIME)
     `;
-    const params: any[] = [podologoId, fecha, hora];
+
+    // Pasamos la hora dos veces y los minutos para calcular los intervalos
+    const params: any[] = [podologoId, fecha, hora, duracionMinutos, hora];
 
     if (ignorarCitaId) {
       query += ` AND id != ?`;
