@@ -16,6 +16,9 @@ import anamnesisRoutes from '../routes/anamnesis/anamnesis.routes.js';
 import dashboardRoutes from '../routes/dashboard/dashboard.routes.js';
 import platformAdminRoutes from '../routes/platform_admin/platform_admin.routes.js';
 import sepomexRoutes from '../integrations/sepomex/sepomex.routes.js';
+import categoriaInventarioRoutes from '../routes/categoria_inventario/categoria_inventario.routes.js';
+import inventarioRoutes from '../routes/inventario/inventario.routes.js';
+import ventaInventarioRoutes from '../routes/venta_inventario/venta_inventario.routes.js';
 
 export const registerRoutes = (app: Application): void => {
   // Rutas públicas
@@ -39,6 +42,9 @@ export const registerRoutes = (app: Application): void => {
   apiProtegida.use('/anamnesis', anamnesisRoutes);
   apiProtegida.use('/dashboard', dashboardRoutes);
   apiProtegida.use('/usuarios', usuarioRoutes);
+  apiProtegida.use('/categorias-inventario', categoriaInventarioRoutes);
+  apiProtegida.use('/inventario', inventarioRoutes);
+  apiProtegida.use('/ventas-inventario', ventaInventarioRoutes);
 
   app.use('/api', apiProtegida);
 
