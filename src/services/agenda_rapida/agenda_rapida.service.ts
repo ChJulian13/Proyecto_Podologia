@@ -5,7 +5,7 @@ import { CitaRepository } from '../../repositories/cita/cita.repository.js';
 import { ClinicaRepository } from '../../repositories/clinica/clinica.repository.js';
 import { ServicioRepository } from '../../repositories/servicio/servicio.repository.js';
 import { UsuarioRepository } from '../../repositories/usuario/usuario.repository.js';
-import { NotFoundError, ValidationError } from '../../common/errors/domain.errors.js';
+import { ConflictError, NotFoundError, ValidationError } from '../../common/errors/domain.errors.js';
 import type { CreateCitaRapidaDTO } from '../../domain/cita/cita.domain.js';
 
 export interface AgendaRapidaResult {
@@ -55,6 +55,21 @@ export class AgendaRapidaService {
                     message: 'El servicio no existe o no pertenece a esta clínica',
                 }]);
             }
+        }
+
+        const duracionEstimada = data.duracion_minutos ?? 60;
+
+        const conflicto = await this.citaRepository.findConflict(
+            data.podologo_id,
+            data.fecha_programada,
+            data.hora_programada,
+            duracionEstimada
+        );
+
+        if (conflicto) {
+            throw new ConflictError(
+                `El podólogo ya tiene una cita agendada para el ${data.fecha_programada} a las ${data.hora_programada}`
+            );
         }
 
         // ── 2. Transacción atómica ──
