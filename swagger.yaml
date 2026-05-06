@@ -18,6 +18,59 @@ components:
       name: access_token
       
   schemas:
+    # --- AGENDA RÁPIDA ---
+    PacienteRapidoDTO:
+      type: object
+      required:
+        - nombre
+        - primer_apellido
+        - telefono
+      properties:
+        nombre:
+          type: string
+          example: "Juan"
+        primer_apellido:
+          type: string
+          example: "Pérez"
+        telefono:
+          type: string
+          example: "2281234567"
+
+    CreateCitaRapidaDTO:
+      type: object
+      required:
+        - clinica_id
+        - podologo_id
+        - fecha_programada
+        - hora_programada
+        - paciente_nuevo
+      properties:
+        clinica_id:
+          type: string
+          format: uuid
+        podologo_id:
+          type: string
+          format: uuid
+        servicio_id:
+          type: string
+          format: uuid
+          nullable: true
+        fecha_programada:
+          type: string
+          format: date
+          example: "2026-05-15"
+        hora_programada:
+          type: string
+          example: "10:30"
+        duracion_minutos:
+          type: integer
+          default: 60
+        notas:
+          type: string
+          nullable: true
+        paciente_nuevo:
+          $ref: '#/components/schemas/PacienteRapidoDTO'
+
     # --- CATEGORÍAS INVENTARIO ---
     CategoriaInventarioEntity:
       type: object
@@ -63,6 +116,7 @@ components:
           type: string
           maxLength: 255
           nullable: true
+          
     PacienteRapidoDTO:
       type: object
       required:
@@ -1738,8 +1792,8 @@ paths:
   
   /api/citas/rapida:
     post:
-      summary: Agendar Cita Rápida (Paciente Nuevo)
-      description: Crea un registro de paciente exprés y agenda su cita en una sola transacción.
+      summary: Agendar Cita Rápida y Registro de Paciente
+      description: Orquestación atómica para crear un paciente nuevo y su primera cita en una sola transacción.
       tags:
         - Citas
       security:
@@ -1752,7 +1806,7 @@ paths:
               $ref: '#/components/schemas/CreateCitaRapidaDTO'
       responses:
         '201':
-          description: Cita y paciente creados exitosamente
+          description: Registro exitoso de paciente y cita.
           content:
             application/json:
               schema:
@@ -1763,6 +1817,7 @@ paths:
                     example: true
                   message:
                     type: string
+                    example: "Paciente registrado y cita agendada exitosamente"
                   data:
                     type: object
                     properties:
@@ -1772,6 +1827,16 @@ paths:
                       citaId:
                         type: string
                         format: uuid
+        '404':
+          description: Clínica, podólogo o servicio no encontrados.
+        '400':
+          description: Error de validación en los datos o conflicto de pertenencia a clínica.
+        '404':
+          description: Clínica, podólogo o servicio no encontrados.
+        '409':
+          description: >
+            Conflicto de horario. El bloque de tiempo solicitado se empalma con una 
+            cita existente para este podólogo (evaluación de intervalos).
 
   /api/citas/hoy:
     get:
