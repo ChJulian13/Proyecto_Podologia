@@ -20,6 +20,7 @@ import categoriaInventarioRoutes from '../routes/categoria_inventario/categoria_
 import inventarioRoutes from '../routes/inventario/inventario.routes.js';
 import ventaInventarioRoutes from '../routes/venta_inventario/venta_inventario.routes.js';
 import agendaRapidaRoutes from '../routes/agenda_rapida/agenda_rapida.routes.js';
+import consultaRoutes from '../routes/consulta/consulta.routes.js';
 
 export const registerRoutes = (app: Application): void => {
   // Rutas públicas
@@ -47,6 +48,7 @@ export const registerRoutes = (app: Application): void => {
   apiProtegida.use('/inventario', inventarioRoutes);
   apiProtegida.use('/ventas-inventario', ventaInventarioRoutes);
   apiProtegida.use('/agenda-rapida', agendaRapidaRoutes);
+  apiProtegida.use('/consultas', consultaRoutes);
 
   app.use('/api', apiProtegida);
 
