@@ -5,10 +5,10 @@ import { CreateFacturaSchema, UpdateEstadoFacturaSchema } from '../../domain/fac
 export class FacturaController {
   private facturaService = new FacturaService();
 
-  getByCita = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  getByConsulta = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { citaId } = req.params as Record<string, string>;
-      const facturas = await this.facturaService.getByCita(citaId!);
+      const { consultaId } = req.params as Record<string, string>;
+      const facturas = await this.facturaService.getByConsulta(consultaId!);
       res.status(200).json({ success: true, data: facturas });
     } catch (error) {
       next(error);
