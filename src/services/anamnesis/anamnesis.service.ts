@@ -62,6 +62,8 @@ export class AnamnesisService {
       await this.anamnesisRepository.createWithTransaction(connection, newId, {
         clinica_id: data.clinica_id,
         paciente_id: data.paciente_id,
+        alergias: data.alergias ?? null,
+        discapacidad: data.discapacidad ?? null,
         profesion: data.profesion ?? null,
         contacto_emergencia_nombre: data.contacto_emergencia_nombre ?? null,
         contacto_emergencia_telefono: data.contacto_emergencia_telefono ?? null,
@@ -146,6 +148,7 @@ export class AnamnesisService {
       // 2b. Actualizar datos de anamnesis
       const anamnesisData: Record<string, any> = {};
       const anamnesisFields = [
+        'alergias', 'discapacidad',
         'profesion', 'contacto_emergencia_nombre', 'contacto_emergencia_telefono',
         'como_nos_encontro', 'toma_medicamentos', 'lista_medicamentos',
         'esta_embarazada', 'semana_embarazo', 'embarazo_alto_riesgo', 'embarazo_detalles',
