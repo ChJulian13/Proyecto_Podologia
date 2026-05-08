@@ -44,8 +44,6 @@ export class PacienteService {
       calle_y_numero: data.calleYNumero ?? null,
       
       fecha_nacimiento: data.fecha_nacimiento ?? null,
-      discapacidad: data.discapacidad ?? null,
-      alergias: data.alergias ?? null,
       notas: data.notas ?? null
     });
 
@@ -73,8 +71,6 @@ export class PacienteService {
       calle_y_numero: data.calleYNumero !== undefined ? data.calleYNumero : existingRow.calle_y_numero,
 
       fecha_nacimiento: data.fecha_nacimiento !== undefined ? data.fecha_nacimiento : existingRow.fecha_nacimiento,
-      discapacidad: data.discapacidad !== undefined ? data.discapacidad : existingRow.discapacidad,
-      alergias: data.alergias !== undefined ? data.alergias : existingRow.alergias,
       notas: data.notas !== undefined ? data.notas : existingRow.notas
     });
     
