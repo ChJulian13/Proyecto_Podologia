@@ -4,7 +4,7 @@ import { FacturaController } from '../../controllers/factura/factura.controller.
 const router = Router();
 const facturaController = new FacturaController();
 
-router.get('/cita/:citaId',  facturaController.getByCita);
+router.get('/consulta/:consultaId',  facturaController.getByConsulta);
 router.post('/',  facturaController.create);
 router.patch('/:id/pagar',  facturaController.marcarPagada);
 
