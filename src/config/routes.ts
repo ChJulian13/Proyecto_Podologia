@@ -9,7 +9,7 @@ import usuarioRoutes from '../routes/usuario/usuario.routes.js';
 import pacienteRoutes from '../routes/paciente/paciente.routes.js';
 import servicioRoutes from '../routes/servicio/servicio.routes.js';
 import citaRoutes from '../routes/cita/cita.routes.js';
-import notaClinicaRoutes from '../routes/nota_clinica/nota_clinica.routes.js';
+
 import imagenRoutes from '../routes/imagen_paciente/imagen_paciente.routes.js';
 import facturaRoutes from '../routes/factura/factura.routes.js';
 import anamnesisRoutes from '../routes/anamnesis/anamnesis.routes.js';
@@ -38,7 +38,7 @@ export const registerRoutes = (app: Application): void => {
   apiProtegida.use('/pacientes', pacienteRoutes);
   apiProtegida.use('/servicios', servicioRoutes);
   apiProtegida.use('/citas', citaRoutes);
-  apiProtegida.use('/notas-clinicas', notaClinicaRoutes);
+
   apiProtegida.use('/imagenes-paciente', imagenRoutes);
   apiProtegida.use('/facturas', facturaRoutes);
   apiProtegida.use('/anamnesis', anamnesisRoutes);
