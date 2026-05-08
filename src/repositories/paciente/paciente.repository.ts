@@ -36,15 +36,14 @@ export class PacienteRepository {
       `INSERT INTO pacientes (
         id, clinica_id, nombre, primer_apellido, segundo_apellido, 
         telefono, correo, codigo_postal, estado, municipio, ciudad, colonia, calle_y_numero,
-        fecha_nacimiento, discapacidad, alergias, notas
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        fecha_nacimiento, notas
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         data.id, data.clinica_id, data.nombre, data.primer_apellido,
         data.segundo_apellido ?? null, data.telefono, data.correo ?? null,
         data.codigo_postal ?? null, data.estado ?? null, data.municipio ?? null,
         data.ciudad ?? null, data.colonia ?? null, data.calle_y_numero ?? null,
-        data.fecha_nacimiento ?? null, data.discapacidad ?? null,
-        data.alergias ?? null, data.notas ?? null
+        data.fecha_nacimiento ?? null, data.notas ?? null
       ] as any[]
     );
   }
@@ -70,15 +69,14 @@ export class PacienteRepository {
       `UPDATE pacientes SET 
         nombre = ?, primer_apellido = ?, segundo_apellido = ?, 
         telefono = ?, correo = ?, codigo_postal = ?, estado = ?, municipio = ?, ciudad = ?, colonia = ?, calle_y_numero = ?,
-        fecha_nacimiento = ?, discapacidad = ?, alergias = ?, notas = ?
+        fecha_nacimiento = ?, notas = ?
        WHERE id = ?`,
       [
         data.nombre, data.primer_apellido, data.segundo_apellido ?? null,
         data.telefono, data.correo ?? null,
         data.codigo_postal ?? null, data.estado ?? null, data.municipio ?? null,
         data.ciudad ?? null, data.colonia ?? null, data.calle_y_numero ?? null,
-        data.fecha_nacimiento ?? null, data.discapacidad ?? null,
-        data.alergias ?? null, data.notas ?? null,
+        data.fecha_nacimiento ?? null, data.notas ?? null,
         id
       ] as any[]
     );
