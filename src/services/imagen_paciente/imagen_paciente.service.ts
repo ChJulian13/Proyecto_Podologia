@@ -3,14 +3,14 @@ import fs from 'fs';
 import path from 'path';
 import { ImagenPacienteRepository } from '../../repositories/imagen_paciente/imagen_paciente.repository.js';
 import { PacienteRepository } from '../../repositories/paciente/paciente.repository.js';
-import { NotaClinicaRepository } from '../../repositories/nota_clinica/nota_clinica.repository.js';
+import { ConsultaRepository } from '../../repositories/consulta/consulta.repository.js';
 import { NotFoundError, BadRequestError } from '../../common/errors/domain.errors.js';
 import { mapImagenRowToEntity, type CreateImagenDTO, type ImagenPacienteEntity } from '../../domain/imagen_paciente/imagen_paciente.domain.js';
 
 export class ImagenPacienteService {
   private imagenRepository = new ImagenPacienteRepository();
   private pacienteRepository = new PacienteRepository();
-  private notaRepository = new NotaClinicaRepository();
+  private consultaRepository = new ConsultaRepository();
 
   async getByPaciente(pacienteId: string): Promise<ImagenPacienteEntity[]> {
     const rows = await this.imagenRepository.findByPacienteId(pacienteId);
@@ -31,11 +31,11 @@ export class ImagenPacienteService {
       throw new BadRequestError('El paciente no existe o no pertenece a esta clínica');
     }
 
-    // 2. Validar Nota Clínica (si se envió)
-    if (data.nota_clinica_id) {
-      const nota = await this.notaRepository.findById(data.nota_clinica_id);
-      if (!nota || nota.paciente_id !== data.paciente_id) {
-        throw new BadRequestError('La nota clínica no coincide con este paciente');
+    // 2. Validar Consulta (si se envió)
+    if (data.consulta_id) {
+      const consulta = await this.consultaRepository.findById(data.consulta_id);
+      if (!consulta || consulta.paciente_id !== data.paciente_id) {
+        throw new BadRequestError('La consulta no coincide con este paciente');
       }
     }
 
@@ -48,7 +48,7 @@ export class ImagenPacienteService {
       newId,
       data.clinica_id,
       data.paciente_id,
-      data.nota_clinica_id ?? null,
+      data.consulta_id ?? null,
       urlArchivo,
       data.descripcion ?? null
     );
@@ -74,8 +74,8 @@ export class ImagenPacienteService {
     }
   }
 
-  async getByNotaClinica(notaClinicaId: string): Promise<ImagenPacienteEntity[]> {
-    const rows = await this.imagenRepository.findByNotaClinicaId(notaClinicaId);
+  async getByConsulta(consultaId: string): Promise<ImagenPacienteEntity[]> {
+    const rows = await this.imagenRepository.findByConsultaId(consultaId);
     return rows.map(mapImagenRowToEntity);
   }
 }
