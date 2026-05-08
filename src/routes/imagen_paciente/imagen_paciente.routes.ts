@@ -7,7 +7,7 @@ const imagenController = new ImagenPacienteController();
 
 // Consulta y Borrado solo requieren el Token
 router.get('/paciente/:pacienteId',  imagenController.getByPaciente);
-router.get('/nota-clinica/:notaClinicaId',  imagenController.getByNotaClinica);
+router.get('/consulta/:consultaId',  imagenController.getByConsulta);
 
 router.delete('/:id',  imagenController.delete);
 
