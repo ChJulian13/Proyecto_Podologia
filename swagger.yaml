@@ -563,6 +563,12 @@ components:
         fechaActualizacion:
           type: string
           format: date-time
+        alergias:
+          type: string
+          nullable: true
+        discapacidad:
+          type: string
+          nullable: true
 
     CreateAnamnesisDTO:
       type: object
@@ -606,6 +612,12 @@ components:
         profesion:
           type: string
           maxLength: 150
+          nullable: true
+        alergias:
+          type: string
+          nullable: true
+        discapacidad:
+          type: string
           nullable: true
         contacto_emergencia_nombre:
           type: string
@@ -764,6 +776,12 @@ components:
         profesion:
           type: string
           maxLength: 150
+          nullable: true
+        alergias:
+          type: string
+          nullable: true
+        discapacidad:
+          type: string
           nullable: true
         contacto_emergencia_nombre:
           type: string
@@ -1239,7 +1257,7 @@ components:
         pacienteId:
           type: string
           format: uuid
-        citaId:
+        consultaId:
           type: string
           format: uuid
           nullable: true
@@ -1279,7 +1297,7 @@ components:
         pacienteId:
           type: string
           format: uuid
-        notaClinicaId:
+        consultaId:
           type: string
           format: uuid
           nullable: true
@@ -1295,103 +1313,6 @@ components:
           type: string
           format: date-time
 
-    NotaClinicaEntity:
-      type: object
-      required:
-        - id
-        - clinica
-        - paciente
-        - podologo
-        - fechaNota
-        - fechaCreacion
-      properties:
-        id:
-          type: string
-          format: uuid
-        clinica:
-          type: object
-          required:
-            - id
-            - nombre
-          properties:
-            id:
-              type: string
-              format: uuid
-            nombre:
-              type: string
-        paciente:
-          type: object
-          required:
-            - id
-            - nombre
-            - primerApellido
-            - nombreCompleto
-          properties:
-            id:
-              type: string
-              format: uuid
-            nombre:
-              type: string
-            primerApellido:
-              type: string
-            segundoApellido:
-              type: string
-              nullable: true
-            nombreCompleto:
-              type: string
-        podologo:
-          type: object
-          required:
-            - id
-            - nombre
-            - primerApellido
-            - nombreCompleto
-          properties:
-            id:
-              type: string
-              format: uuid
-            nombre:
-              type: string
-            primerApellido:
-              type: string
-            segundoApellido:
-              type: string
-              nullable: true
-            nombreCompleto:
-              type: string
-        cita:
-          type: object
-          nullable: true
-          required:
-            - id
-            - fechaProgramada
-            - servicioNombre
-          properties:
-            id:
-              type: string
-              format: uuid
-            fechaProgramada:
-              type: string
-              format: date
-            servicioNombre:
-              type: string
-              description: Nombre del servicio realizado en esa cita
-        fechaNota:
-          type: string
-          format: date
-          example: "2026-04-09"
-        notas:
-          type: string
-          nullable: true
-        diagnostico:
-          type: string
-          nullable: true
-        tratamiento:
-          type: string
-          nullable: true
-        fechaCreacion:
-          type: string
-          format: date-time
 
     PacienteEntity:
       type: object
@@ -1463,12 +1384,7 @@ components:
           type: string
           nullable: true
           example: "Av. Principal 123, Int 4"
-        discapacidad:
-          type: string
-          nullable: true
-        alergias:
-          type: string
-          nullable: true
+
         notas:
           type: string
           nullable: true
@@ -2567,16 +2483,16 @@ paths:
                     $ref: '#/components/schemas/CrecimientoPacientesEntity'
 
   # --- FACTURAS ---
-  /api/facturas/cita/{citaId}:
+  /api/facturas/consulta/{consultaId}:
     get:
-      summary: Obtener las facturas asociadas a una cita específica
+      summary: Obtener las facturas asociadas a una consulta específica
       tags:
         - Facturas
       security:
         - cookieAuth: []
       parameters:
         - in: path
-          name: citaId
+          name: consultaId
           required: true
           schema:
             type: string
@@ -2596,7 +2512,7 @@ paths:
                     items:
                       $ref: '#/components/schemas/FacturaEntity'
         '400':
-          description: El ID de la cita es inválido.
+          description: El ID de la consulta es inválido.
 
   /api/facturas:
     post:
@@ -2624,7 +2540,7 @@ paths:
                 paciente_id:
                   type: string
                   format: uuid
-                cita_id:
+                consulta_id:
                   type: string
                   format: uuid
                   nullable: true
@@ -2709,24 +2625,24 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/ImagenPacienteEntity'
-  /api/imagenes-paciente/nota-clinica/{notaClinicaId}:
+  /api/imagenes-paciente/consulta/{consultaId}:
     get:
-      summary: Obtener las imágenes asociadas a una nota clínica específica
+      summary: Obtener las imágenes asociadas a una consulta específica
       tags:
         - Imágenes Paciente
       security:
         - cookieAuth: []
       parameters:
         - in: path
-          name: notaClinicaId
+          name: consultaId
           required: true
-          description: UUID de la nota clínica
+          description: UUID de la consulta
           schema:
             type: string
             format: uuid
       responses:
         '200':
-          description: Imágenes de la nota obtenidas correctamente. Retorna un array vacío [] si no hay evidencia.
+          description: Imágenes de la consulta obtenidas correctamente. Retorna un array vacío [] si no hay evidencia.
           content:
             application/json:
               schema:
@@ -2740,7 +2656,7 @@ paths:
                     items:
                       $ref: '#/components/schemas/ImagenPacienteEntity'
         '400':
-          description: El ID de la nota clínica es inválido.
+          description: El ID de la consulta es inválido.
           content:
             application/json:
               schema:
@@ -2751,7 +2667,7 @@ paths:
                     example: false
                   message:
                     type: string
-                    example: 'El ID de la nota clínica es inválido'
+                    example: 'El ID de la consulta es inválido'
 
   /api/imagenes-paciente:
     post:
@@ -2780,7 +2696,7 @@ paths:
                 paciente_id:
                   type: string
                   format: uuid
-                nota_clinica_id:
+                consulta_id:
                   type: string
                   format: uuid
                   nullable: true
@@ -2808,166 +2724,6 @@ paths:
         '200':
           description: Imagen eliminada exitosamente.
 
-  # --- NOTAS CLÍNICAS ---
-  /api/notas-clinicas/paciente/{pacienteId}:
-    get:
-      summary: Obtener el historial de notas clínicas de un paciente
-      tags:
-        - Notas Clínicas
-      security:
-        - cookieAuth: []
-      parameters:
-        - in: path
-          name: pacienteId
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Historial clínico obtenido correctamente.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/NotaClinicaEntity'
-
-  /api/notas-clinicas:
-    post:
-      summary: Crear una nueva nota clínica
-      tags:
-        - Notas Clínicas
-      security:
-        - cookieAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - clinica_id
-                - paciente_id
-                - podologo_id
-              properties:
-                clinica_id:
-                  type: string
-                  format: uuid
-                paciente_id:
-                  type: string
-                  format: uuid
-                podologo_id:
-                  type: string
-                  format: uuid
-                cita_id:
-                  type: string
-                  format: uuid
-                  nullable: true
-                fecha_nota:
-                  type: string
-                  pattern: '^\d{4}-\d{2}-\d{2}$'
-                notas:
-                  type: string
-                diagnostico:
-                  type: string
-                tratamiento:
-                  type: string
-      responses:
-        '201':
-          description: Nota clínica guardada exitosamente.
-  
-  /api/notas-clinicas/cita/{citaId}:
-    get:
-      summary: Obtener la nota clínica asociada a una cita
-      description: Retorna la nota clínica si la cita ya fue atendida. Si retorna 404, significa que es una cita nueva y el formulario debe abrirse en modo Creación.
-      tags:
-        - Notas Clínicas
-      security:
-        - cookieAuth: []
-      parameters:
-        - in: path
-          name: citaId
-          required: true
-          description: UUID de la cita
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Nota clínica obtenida correctamente.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  data:
-                    $ref: '#/components/schemas/NotaClinicaEntity'
-        '404':
-          description: No hay nota clínica para esta cita.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: false
-                  message:
-                    type: string
-                    example: 'No hay nota clínica para esta cita'
-        '400':
-          description: El ID de la cita es inválido.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: false
-                  message:
-                    type: string
-                    example: 'El ID de la cita es inválido'
-
-  /api/notas-clinicas/{id}:
-    patch:
-      summary: Actualizar una nota clínica existente
-      tags:
-        - Notas Clínicas
-      security:
-        - cookieAuth: []
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                notas:
-                  type: string
-                diagnostico:
-                  type: string
-                tratamiento:
-                  type: string
-      responses:
-        '200':
-          description: Nota clínica actualizada.
 
   # --- PACIENTES ---
   /api/pacientes/clinica/{clinicaId}:
@@ -3051,10 +2807,7 @@ paths:
                 calleYNumero:
                   type: string
                   example: "Av. Principal 123"
-                discapacidad:
-                  type: string
-                alergias:
-                  type: string
+
                 notas:
                   type: string
       responses:
@@ -3110,10 +2863,7 @@ paths:
                   type: string
                 calleYNumero:
                   type: string
-                discapacidad:
-                  type: string
-                alergias:
-                  type: string
+
                 notas:
                   type: string
       responses:
