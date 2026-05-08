@@ -23,13 +23,13 @@ export class ImagenPacienteRepository {
 
   async create(
     id: string, clinicaId: string, pacienteId: string, 
-    notaClinicaId: string | null, urlArchivo: string, descripcion: string | null
+    consultaId: string | null, urlArchivo: string, descripcion: string | null
   ): Promise<void> {
     await pool.execute(
       `INSERT INTO imagenes_paciente 
-       (id, clinica_id, paciente_id, nota_clinica_id, url_archivo, descripcion) 
+       (id, clinica_id, paciente_id, consulta_id, url_archivo, descripcion) 
        VALUES (?, ?, ?, ?, ?, ?)`,
-      [id, clinicaId, pacienteId, notaClinicaId, urlArchivo, descripcion]
+      [id, clinicaId, pacienteId, consultaId, urlArchivo, descripcion]
     );
   }
 
@@ -40,12 +40,12 @@ export class ImagenPacienteRepository {
     );
   }
 
-  async findByNotaClinicaId(notaClinicaId: string): Promise<ImagenPacienteRow[]> {
+  async findByConsultaId(consultaId: string): Promise<ImagenPacienteRow[]> {
     const [rows] = await pool.execute<any[]>(
       `SELECT * FROM imagenes_paciente 
-       WHERE nota_clinica_id = ? 
+       WHERE consulta_id = ? 
        ORDER BY fecha_creacion DESC`,
-      [notaClinicaId]
+      [consultaId]
     );
     return rows;
   }
