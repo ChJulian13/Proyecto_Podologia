@@ -34,6 +34,8 @@ export const CreateAnamnesisSchema = z.object({
   calleYNumero: z.string().optional().nullable(),
 
   // ── Datos de Anamnesis ──
+  alergias: z.string().optional().nullable(),
+  discapacidad: z.string().optional().nullable(),
   profesion: z.string().max(150).optional().nullable(),
   contacto_emergencia_nombre: z.string().max(150).optional().nullable(),
   contacto_emergencia_telefono: z.string().max(20).optional().nullable(),
@@ -152,6 +154,10 @@ export interface AnamnesisRow {
   fecha_creacion: Date;
   fecha_actualizacion: Date;
 
+  // Campos propios de anamnesis reubicados desde pacientes
+  alergias: string | null;
+  discapacidad: string | null;
+
   // Campos del paciente (JOIN)
   paciente_nombre: string;
   paciente_primer_apellido: string;
@@ -237,6 +243,8 @@ export interface AnamnesisEntity {
   lugarFirma: string | null;
   fechaCreacion: Date;
   fechaActualizacion: Date;
+  alergias: string | null;
+  discapacidad: string | null;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -308,4 +316,6 @@ export const mapAnamnesisRowToEntity = (row: AnamnesisRow): AnamnesisEntity => (
   lugarFirma: row.lugar_firma,
   fechaCreacion: row.fecha_creacion,
   fechaActualizacion: row.fecha_actualizacion,
+  alergias: row.alergias,
+  discapacidad: row.discapacidad,
 });
