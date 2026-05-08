@@ -91,6 +91,8 @@ export class AnamnesisRepository {
     data: {
       clinica_id: string;
       paciente_id: string;
+      alergias?: string | null;
+      discapacidad?: string | null;
       profesion?: string | null;
       contacto_emergencia_nombre?: string | null;
       contacto_emergencia_telefono?: string | null;
@@ -131,7 +133,7 @@ export class AnamnesisRepository {
   ): Promise<void> {
     await connection.execute(
       `INSERT INTO anamnesis_paciente (
-        id, clinica_id, paciente_id, profesion,
+        id, clinica_id, paciente_id, alergias, discapacidad, profesion,
         contacto_emergencia_nombre, contacto_emergencia_telefono,
         como_nos_encontro, toma_medicamentos, lista_medicamentos,
         esta_embarazada, semana_embarazo, embarazo_alto_riesgo, embarazo_detalles,
@@ -145,7 +147,7 @@ export class AnamnesisRepository {
         escala_sueno, escala_energia, escala_estres, escala_nutricion, escala_ejercicio,
         acepta_terminos, lugar_firma
       ) VALUES (
-        ?, ?, ?, ?,
+        ?, ?, ?, ?, ?, ?,
         ?, ?,
         ?, ?, ?,
         ?, ?, ?, ?,
@@ -160,7 +162,7 @@ export class AnamnesisRepository {
         ?, ?
       )`,
       [
-        id, data.clinica_id, data.paciente_id, data.profesion ?? null,
+        id, data.clinica_id, data.paciente_id, data.alergias ?? null, data.discapacidad ?? null, data.profesion ?? null,
         data.contacto_emergencia_nombre ?? null, data.contacto_emergencia_telefono ?? null,
         data.como_nos_encontro ?? null, data.toma_medicamentos ? 1 : 0, data.lista_medicamentos ?? null,
         data.esta_embarazada ? 1 : 0, data.semana_embarazo ?? null, data.embarazo_alto_riesgo ? 1 : 0, data.embarazo_detalles ?? null,
@@ -186,6 +188,7 @@ export class AnamnesisRepository {
     data: Record<string, any>
   ): Promise<void> {
     const allowedFields = [
+      'alergias', 'discapacidad',
       'profesion', 'contacto_emergencia_nombre', 'contacto_emergencia_telefono',
       'como_nos_encontro', 'toma_medicamentos', 'lista_medicamentos',
       'esta_embarazada', 'semana_embarazo', 'embarazo_alto_riesgo', 'embarazo_detalles',
