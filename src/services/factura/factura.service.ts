@@ -1,17 +1,17 @@
 import crypto from 'crypto';
 import { FacturaRepository } from '../../repositories/factura/factura.repository.js';
 import { PacienteRepository } from '../../repositories/paciente/paciente.repository.js';
-import { CitaRepository } from '../../repositories/cita/cita.repository.js';
+import { ConsultaRepository } from '../../repositories/consulta/consulta.repository.js';
 import { NotFoundError, BadRequestError, ConflictError } from '../../common/errors/domain.errors.js';
 import { mapFacturaRowToEntity, type CreateFacturaDTO, type UpdateEstadoFacturaDTO, type FacturaEntity } from '../../domain/factura/factura.domain.js';
 
 export class FacturaService {
   private facturaRepository = new FacturaRepository();
   private pacienteRepository = new PacienteRepository();
-  private citaRepository = new CitaRepository();
+  private consultaRepository = new ConsultaRepository();
 
-  async getByCita(citaId: string): Promise<FacturaEntity[]> {
-    const rows = await this.facturaRepository.findByCitaId(citaId);
+  async getByConsulta(consultaId: string): Promise<FacturaEntity[]> {
+    const rows = await this.facturaRepository.findByConsultaId(consultaId);
     return rows.map(mapFacturaRowToEntity);
   }
 
@@ -22,11 +22,11 @@ export class FacturaService {
       throw new BadRequestError('El paciente no existe o no pertenece a esta clínica');
     }
 
-    // 2. Si hay cita, validar que exista y pertenezca al paciente
-    if (data.cita_id) {
-      const cita = await this.citaRepository.findById(data.cita_id);
-      if (!cita || cita.paciente_id !== data.paciente_id) {
-        throw new BadRequestError('La cita no coincide con el paciente');
+    // 2. Si hay consulta, validar que exista y pertenezca al paciente
+    if (data.consulta_id) {
+      const consulta = await this.consultaRepository.findById(data.consulta_id);
+      if (!consulta || consulta.paciente_id !== data.paciente_id) {
+        throw new BadRequestError('La consulta no coincide con el paciente');
       }
     }
 
@@ -38,7 +38,7 @@ export class FacturaService {
 
     const newId = crypto.randomUUID();
     await this.facturaRepository.create(
-      newId, data.clinica_id, data.paciente_id, data.cita_id ?? null,
+      newId, data.clinica_id, data.paciente_id, data.consulta_id ?? null,
       data.numero_factura, data.descripcion_servicio, data.monto
     );
 
