@@ -15,19 +15,19 @@ export class FacturaRepository {
     return rows[0] ?? null;
   }
 
-  async findByCitaId(citaId: string): Promise<FacturaRow[]> {
-    const [rows] = await pool.execute<any[]>('SELECT * FROM facturas WHERE cita_id = ? ORDER BY fecha_emision DESC', [citaId]);
+  async findByConsultaId(consultaId: string): Promise<FacturaRow[]> {
+    const [rows] = await pool.execute<any[]>('SELECT * FROM facturas WHERE consulta_id = ? ORDER BY fecha_emision DESC', [consultaId]);
     return rows;
   }
 
   async create(
-    id: string, clinicaId: string, pacienteId: string, citaId: string | null,
+    id: string, clinicaId: string, pacienteId: string, consultaId: string | null,
     numeroFactura: string, descripcion: string, monto: number
   ): Promise<void> {
     await pool.execute(
-      `INSERT INTO facturas (id, clinica_id, paciente_id, cita_id, numero_factura, descripcion_servicio, monto) 
+      `INSERT INTO facturas (id, clinica_id, paciente_id, consulta_id, numero_factura, descripcion_servicio, monto) 
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [id, clinicaId, pacienteId, citaId, numeroFactura, descripcion, monto]
+      [id, clinicaId, pacienteId, consultaId, numeroFactura, descripcion, monto]
     );
   }
 
