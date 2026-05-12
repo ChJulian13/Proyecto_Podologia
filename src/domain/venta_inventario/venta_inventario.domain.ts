@@ -35,6 +35,13 @@ export interface VentaInventarioRow {
   item_nombre?: string;
 }
 
+export interface VentaLoteRow {
+  id: string;
+  venta_id: string;
+  lote_id: string;
+  cantidad: number;
+}
+
 // ==========================================
 // 3. CAPA DE DOMINIO PURA (Entity para Angular)
 // ==========================================
@@ -53,8 +60,15 @@ export interface VentaInventarioEntity {
   estaCancelada: boolean;
 }
 
+export interface VentaLoteEntity {
+  id: string;
+  ventaId: string;
+  loteId: string;
+  cantidad: number;
+}
+
 // ==========================================
-// 4. MAPPER
+// 4. MAPPERS
 // ==========================================
 export const mapVentaInventarioRowToEntity = (row: VentaInventarioRow): VentaInventarioEntity => ({
   id: row.id,
@@ -69,4 +83,11 @@ export const mapVentaInventarioRowToEntity = (row: VentaInventarioRow): VentaInv
   precioVenta: parseFloat(row.precio_venta),
   fechaVenta: row.fecha_venta,
   estaCancelada: row.esta_cancelada === 1,
+});
+
+export const mapVentaLoteRowToEntity = (row: VentaLoteRow): VentaLoteEntity => ({
+  id: row.id,
+  ventaId: row.venta_id,
+  loteId: row.lote_id,
+  cantidad: row.cantidad,
 });
