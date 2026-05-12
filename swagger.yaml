@@ -189,9 +189,6 @@ components:
         descripcion:
           type: string
           nullable: true
-        stockCantidad:
-          type: integer
-          example: 50
         precioCompra:
           type: number
           format: float
@@ -202,16 +199,22 @@ components:
           format: float
           nullable: true
           example: 250.00
-        fechaCaducidad:
-          type: string
-          format: date
-          nullable: true
+        requiereLote:
+          type: boolean
+          description: "Indica si este producto requiere control por número de lote"
+        requiereCaducidad:
+          type: boolean
+          description: "Indica si este producto requiere control de fecha de caducidad"
         ubicacion:
           type: string
           nullable: true
           example: "Vitrina 1"
         estaActivo:
           type: boolean
+        stockTotal:
+          type: integer
+          description: "Stock total calculado como SUM de todos los lotes activos"
+          example: 50
         fechaCreacion:
           type: string
           format: date-time
@@ -238,10 +241,6 @@ components:
         descripcion:
           type: string
           nullable: true
-        stock_cantidad:
-          type: integer
-          minimum: 0
-          default: 0
         precio_compra:
           type: number
           format: float
@@ -252,10 +251,12 @@ components:
           format: float
           minimum: 0
           nullable: true
-        fecha_caducidad:
-          type: string
-          format: date
-          nullable: true
+        requiere_lote:
+          type: boolean
+          default: false
+        requiere_caducidad:
+          type: boolean
+          default: false
         ubicacion:
           type: string
           maxLength: 255
@@ -283,30 +284,88 @@ components:
           format: float
           minimum: 0
           nullable: true
-        fecha_caducidad:
-          type: string
-          format: date
-          nullable: true
+        requiere_lote:
+          type: boolean
+        requiere_caducidad:
+          type: boolean
         ubicacion:
           type: string
           maxLength: 255
           nullable: true
 
-    AjusteStockDTO:
+    # --- INVENTARIO LOTES ---
+    InventarioLoteEntity:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        inventarioId:
+          type: string
+          format: uuid
+        numeroLote:
+          type: string
+          example: "LOTE-2026-A01"
+        fechaCaducidad:
+          type: string
+          format: date
+          nullable: true
+          example: "2027-03-15"
+        stockCantidad:
+          type: integer
+          example: 25
+        fechaIngreso:
+          type: string
+          format: date-time
+
+    CreateLoteDTO:
       type: object
       required:
-        - cantidad
-        - tipo
+        - numero_lote
+        - stock_cantidad
       properties:
-        cantidad:
+        numero_lote:
+          type: string
+          minLength: 1
+          maxLength: 50
+          example: "LOTE-2026-A01"
+        fecha_caducidad:
+          type: string
+          format: date
+          nullable: true
+          example: "2027-03-15"
+        stock_cantidad:
           type: integer
           minimum: 1
-        tipo:
+          example: 50
+
+    # --- INVENTARIO CÓDIGOS DE BARRAS ---
+    InventarioCodigoBarrasEntity:
+      type: object
+      properties:
+        id:
           type: string
-          enum: [ENTRADA, SALIDA]
-        motivo:
+          format: uuid
+        inventarioId:
           type: string
-          nullable: true
+          format: uuid
+        codigoBarra:
+          type: string
+          example: "7501234567890"
+        fechaCreacion:
+          type: string
+          format: date-time
+
+    CreateCodigoBarrasDTO:
+      type: object
+      required:
+        - codigo_barra
+      properties:
+        codigo_barra:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: "7501234567890"
 
     # --- VENTAS INVENTARIO ---
     VentaInventarioEntity:
@@ -417,12 +476,6 @@ components:
             fechaNacimiento:
               type: string
               format: date
-              nullable: true
-            discapacidad:
-              type: string
-              nullable: true
-            alergias:
-              type: string
               nullable: true
             notas:
               type: string
@@ -3367,6 +3420,36 @@ paths:
                     items:
                       $ref: '#/components/schemas/InventarioEntity'
 
+  /api/inventario/clinica/{clinicaId}/productos-venta:
+    get:
+      summary: Obtener únicamente los productos de venta del inventario de una clínica
+      description: Filtra el inventario devolviendo solo los artículos cuya categoría sea "Producto Venta".
+      tags:
+        - Inventario
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: clinicaId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Lista de productos de venta de la clínica
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/InventarioEntity'
+
   /api/inventario/{id}:
     parameters:
       - in: path
@@ -3435,9 +3518,126 @@ paths:
         '201':
           description: Artículo registrado exitosamente
 
-  /api/inventario/{id}/stock:
-    patch:
-      summary: Ajustar stock manualmente (Entradas/Salidas)
+  /api/inventario/{id}/lotes:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: UUID del artículo de inventario
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: Obtener todos los lotes de un artículo
+      tags:
+        - Inventario
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Lista de lotes del artículo
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/InventarioLoteEntity'
+        '404':
+          description: Artículo no encontrado
+    post:
+      summary: Registrar un nuevo lote de existencias
+      description: Ingresa mercancía al inventario creando un registro de lote con número, caducidad y cantidad.
+      tags:
+        - Inventario
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLoteDTO'
+      responses:
+        '201':
+          description: Lote registrado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/InventarioLoteEntity'
+        '404':
+          description: Artículo no encontrado
+
+  /api/inventario/{id}/codigos-barras:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: UUID del artículo de inventario
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: Obtener códigos de barras de un artículo
+      tags:
+        - Inventario
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Lista de códigos de barras
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/InventarioCodigoBarrasEntity'
+        '404':
+          description: Artículo no encontrado
+    post:
+      summary: Registrar un código de barras para un artículo
+      tags:
+        - Inventario
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCodigoBarrasDTO'
+      responses:
+        '201':
+          description: Código de barras registrado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/InventarioCodigoBarrasEntity'
+        '404':
+          description: Artículo no encontrado
+
+  /api/inventario/{id}/codigos-barras/{codigoId}:
+    delete:
+      summary: Eliminar un código de barras
       tags:
         - Inventario
       security:
@@ -3449,17 +3649,17 @@ paths:
           schema:
             type: string
             format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AjusteStockDTO'
+        - in: path
+          name: codigoId
+          required: true
+          schema:
+            type: string
+            format: uuid
       responses:
         '200':
-          description: Stock ajustado exitosamente
-        '400':
-          description: Stock insuficiente para realizar salida
+          description: Código de barras eliminado exitosamente
+        '404':
+          description: Artículo o código de barras no encontrado
 
   # --- VENTAS INVENTARIO ---
   /api/ventas-inventario/factura/{facturaId}:
@@ -3512,7 +3712,11 @@ paths:
   /api/ventas-inventario:
     post:
       summary: Registrar Venta Múltiple (Carrito de Compras)
-      description: Operación transaccional. Registra múltiples productos y descuenta stock simultáneamente.
+      description: |
+        Operación transaccional con algoritmo FEFO (First Expired, First Out).
+        Registra múltiples productos y descuenta stock automáticamente de los lotes
+        con fecha de caducidad más próxima. Si un lote no alcanza, continúa con el siguiente.
+        Genera trazabilidad en la tabla ventas_inventario_lotes.
       tags:
         - Ventas Inventario
       security:
@@ -3532,7 +3736,9 @@ paths:
   /api/ventas-inventario/{id}/cancelar:
     patch:
       summary: Cancelar una venta y revertir el stock
-      description: Operación transaccional para anular venta y reabastecer el inventario físico.
+      description: |
+        Operación transaccional para anular venta y restaurar stock en cada lote
+        original utilizando los registros de trazabilidad de ventas_inventario_lotes.
       tags:
         - Ventas Inventario
       security:
