@@ -17,8 +17,6 @@ export class AnamnesisRepository {
       p.telefono        AS paciente_telefono,
       p.correo          AS paciente_correo,
       p.fecha_nacimiento AS paciente_fecha_nacimiento,
-      p.discapacidad    AS paciente_discapacidad,
-      p.alergias        AS paciente_alergias,
       p.notas           AS paciente_notas,
       p.codigo_postal,
       p.estado,
@@ -67,14 +65,14 @@ export class AnamnesisRepository {
     const fields: string[] = [];
     const values: any[] = [];
 
-    if (data.correo !== undefined)           { fields.push('correo = ?');           values.push(data.correo); }
-    if (data.fecha_nacimiento !== undefined)  { fields.push('fecha_nacimiento = ?'); values.push(data.fecha_nacimiento); }
-    if (data.codigo_postal !== undefined)     { fields.push('codigo_postal = ?');    values.push(data.codigo_postal); }
-    if (data.estado !== undefined)            { fields.push('estado = ?');           values.push(data.estado); }
-    if (data.municipio !== undefined)         { fields.push('municipio = ?');        values.push(data.municipio); }
-    if (data.ciudad !== undefined)            { fields.push('ciudad = ?');           values.push(data.ciudad); }
-    if (data.colonia !== undefined)           { fields.push('colonia = ?');          values.push(data.colonia); }
-    if (data.calle_y_numero !== undefined)    { fields.push('calle_y_numero = ?');   values.push(data.calle_y_numero); }
+    if (data.correo !== undefined) { fields.push('correo = ?'); values.push(data.correo); }
+    if (data.fecha_nacimiento !== undefined) { fields.push('fecha_nacimiento = ?'); values.push(data.fecha_nacimiento); }
+    if (data.codigo_postal !== undefined) { fields.push('codigo_postal = ?'); values.push(data.codigo_postal); }
+    if (data.estado !== undefined) { fields.push('estado = ?'); values.push(data.estado); }
+    if (data.municipio !== undefined) { fields.push('municipio = ?'); values.push(data.municipio); }
+    if (data.ciudad !== undefined) { fields.push('ciudad = ?'); values.push(data.ciudad); }
+    if (data.colonia !== undefined) { fields.push('colonia = ?'); values.push(data.colonia); }
+    if (data.calle_y_numero !== undefined) { fields.push('calle_y_numero = ?'); values.push(data.calle_y_numero); }
 
     if (fields.length === 0) return;
 
