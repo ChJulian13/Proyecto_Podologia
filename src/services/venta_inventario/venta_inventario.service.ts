@@ -23,7 +23,7 @@ export class VentaInventarioService {
     return rows.map(mapVentaInventarioRowToEntity);
   }
 
-  // ── CREATE VENTA — Operación Transaccional ──
+  // ── CREATE VENTA — Operación Transaccional con FEFO ──
 
   async create(data: CreateVentaInventarioDTO): Promise<VentaInventarioEntity[]> {
     const connection = await pool.getConnection();
@@ -43,21 +43,22 @@ export class VentaInventarioService {
           throw new BadRequestError(`El artículo "${item.nombre}" no está activo para la venta`);
         }
 
-        // 2. Verificar stock suficiente
-        if (item.stock_cantidad < prod.cantidad) {
+        // 2. Obtener lotes disponibles ordenados FEFO
+        const lotesDisponibles = await this.inventarioRepository.findLotesDisponiblesFefo(prod.inventario_item_id);
+
+        // 3. Calcular stock total disponible
+        const stockTotal = lotesDisponibles.reduce((sum, l) => sum + l.stock_cantidad, 0);
+        if (stockTotal < prod.cantidad) {
           throw new BadRequestError(
-            `Stock insuficiente para "${item.nombre}". Disponible: ${item.stock_cantidad}, Solicitado: ${prod.cantidad}`
+            `Stock insuficiente para "${item.nombre}". Disponible: ${stockTotal}, Solicitado: ${prod.cantidad}`
           );
         }
 
-        // 3. Calcular nuevo stock y generar ID
-        const newId = crypto.randomUUID();
-        const nuevoStock = item.stock_cantidad - prod.cantidad;
-
         // 4. Insertar registro de esta línea de venta
+        const ventaId = crypto.randomUUID();
         await this.ventaRepository.createWithTransaction(
           connection,
-          newId,
+          ventaId,
           data.clinica_id,
           data.paciente_id ?? null,
           data.factura_id ?? null,
@@ -66,14 +67,32 @@ export class VentaInventarioService {
           prod.precio_venta
         );
 
-        // 5. Descontar stock del inventario
-        await this.inventarioRepository.updateStockWithTransaction(
-          connection,
-          prod.inventario_item_id,
-          nuevoStock
-        );
+        // 5. Algoritmo FEFO — Descontar de lotes en orden de caducidad
+        let cantidadRestante = prod.cantidad;
 
-        ventasCreadasIds.push(newId);
+        for (const lote of lotesDisponibles) {
+          if (cantidadRestante <= 0) break;
+
+          const descontar = Math.min(cantidadRestante, lote.stock_cantidad);
+          const nuevoStockLote = lote.stock_cantidad - descontar;
+
+          // 5a. Actualizar stock del lote
+          await this.inventarioRepository.updateLoteStock(connection, lote.id, nuevoStockLote);
+
+          // 5b. Registrar trazabilidad en ventas_inventario_lotes
+          const ventaLoteId = crypto.randomUUID();
+          await this.ventaRepository.createVentaLote(
+            connection,
+            ventaLoteId,
+            ventaId,
+            lote.id,
+            descontar
+          );
+
+          cantidadRestante -= descontar;
+        }
+
+        ventasCreadasIds.push(ventaId);
       }
 
       // Si todo el ciclo terminó sin errores, consolidamos todo en la base de datos
@@ -95,7 +114,7 @@ export class VentaInventarioService {
     return ventasEntities;
   }
 
-  // ── CANCELAR VENTA — Operación Transaccional ──
+  // ── CANCELAR VENTA — Operación Transaccional con restauración FEFO ──
 
   async cancelar(id: string): Promise<VentaInventarioEntity> {
     // 1. Buscar la venta
@@ -107,13 +126,10 @@ export class VentaInventarioService {
       throw new ConflictError('Esta venta ya fue cancelada anteriormente');
     }
 
-    // 3. Obtener el item de inventario para calcular stock restaurado
-    const item = await this.inventarioRepository.findById(venta.inventario_item_id);
-    if (!item) throw new NotFoundError('Artículo de inventario asociado');
+    // 3. Obtener los registros de trazabilidad (qué lotes se descontaron)
+    const ventaLotes = await this.ventaRepository.findLotesByVentaId(id);
 
-    const stockRestaurado = item.stock_cantidad + venta.cantidad;
-
-    // 4. Transacción: CANCEL venta + RESTORE stock
+    // 4. Transacción: CANCEL venta + RESTORE stock en cada lote
     const connection = await pool.getConnection();
 
     try {
@@ -122,12 +138,19 @@ export class VentaInventarioService {
       // 4a. Marcar venta como cancelada
       await this.ventaRepository.cancelWithTransaction(connection, id);
 
-      // 4b. Regresar stock al inventario
-      await this.inventarioRepository.updateStockWithTransaction(
-        connection,
-        venta.inventario_item_id,
-        stockRestaurado
-      );
+      // 4b. Restaurar stock en cada lote tocado
+      for (const ventaLote of ventaLotes) {
+        // Leer stock actual del lote
+        const [loteRows] = await connection.execute<any[]>(
+          'SELECT stock_cantidad FROM inventario_lotes WHERE id = ? LIMIT 1',
+          [ventaLote.lote_id]
+        );
+        const loteActual = loteRows[0];
+        if (loteActual) {
+          const stockRestaurado = loteActual.stock_cantidad + ventaLote.cantidad;
+          await this.inventarioRepository.updateLoteStock(connection, ventaLote.lote_id, stockRestaurado);
+        }
+      }
 
       await connection.commit();
     } catch (error) {
