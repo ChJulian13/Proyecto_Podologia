@@ -1,6 +1,11 @@
 import type { Request, Response, NextFunction } from 'express';
 import { InventarioService } from '../../services/inventario/inventario.service.js';
-import { CreateInventarioSchema, UpdateInventarioSchema, AjusteStockSchema } from '../../domain/inventario/inventario.domain.js';
+import {
+  CreateInventarioSchema,
+  UpdateInventarioSchema,
+  CreateLoteSchema,
+  CreateCodigoBarrasSchema,
+} from '../../domain/inventario/inventario.domain.js';
 
 export class InventarioController {
   private inventarioService = new InventarioService();
@@ -10,6 +15,16 @@ export class InventarioController {
       const { clinicaId } = req.params as Record<string, string>;
       const inventario = await this.inventarioService.getAllByClinica(clinicaId!);
       res.status(200).json({ success: true, data: inventario });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getProductosVentaByClinica = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { clinicaId } = req.params as Record<string, string>;
+      const productos = await this.inventarioService.getProductosVentaByClinica(clinicaId!);
+      res.status(200).json({ success: true, data: productos });
     } catch (error) {
       next(error);
     }
@@ -46,22 +61,71 @@ export class InventarioController {
     }
   };
 
-  ajustarStock = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const { id } = req.params as Record<string, string>;
-      const validatedData = AjusteStockSchema.parse(req.body);
-      const itemActualizado = await this.inventarioService.ajustarStock(id!, validatedData);
-      res.status(200).json({ success: true, message: 'Stock ajustado exitosamente', data: itemActualizado });
-    } catch (error) {
-      next(error);
-    }
-  };
-
   delete = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params as Record<string, string>;
       await this.inventarioService.delete(id!);
       res.status(200).json({ success: true, message: 'Artículo desactivado exitosamente' });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // ────────────────────────────────────────────────────────────────────────
+  // LOTES
+  // ────────────────────────────────────────────────────────────────────────
+
+  getLotes = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { id } = req.params as Record<string, string>;
+      const lotes = await this.inventarioService.getLotesByProducto(id!);
+      res.status(200).json({ success: true, data: lotes });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  createLote = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { id } = req.params as Record<string, string>;
+      const validatedData = CreateLoteSchema.parse(req.body);
+      const nuevoLote = await this.inventarioService.createLote(id!, validatedData);
+      res.status(201).json({ success: true, message: 'Lote registrado exitosamente', data: nuevoLote });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // ────────────────────────────────────────────────────────────────────────
+  // CÓDIGOS DE BARRAS
+  // ────────────────────────────────────────────────────────────────────────
+
+  getCodigosBarras = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { id } = req.params as Record<string, string>;
+      const codigos = await this.inventarioService.getCodigosByProducto(id!);
+      res.status(200).json({ success: true, data: codigos });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  createCodigoBarras = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { id } = req.params as Record<string, string>;
+      const validatedData = CreateCodigoBarrasSchema.parse(req.body);
+      const nuevoCodigo = await this.inventarioService.createCodigoBarras(id!, validatedData);
+      res.status(201).json({ success: true, message: 'Código de barras registrado exitosamente', data: nuevoCodigo });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  deleteCodigoBarras = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { id, codigoId } = req.params as Record<string, string>;
+      await this.inventarioService.deleteCodigoBarras(id!, codigoId!);
+      res.status(200).json({ success: true, message: 'Código de barras eliminado exitosamente' });
     } catch (error) {
       next(error);
     }
