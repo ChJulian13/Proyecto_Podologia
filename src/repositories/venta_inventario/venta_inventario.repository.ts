@@ -1,6 +1,6 @@
 import { pool } from '../../config/database.js';
 import type { PoolConnection } from 'mysql2/promise';
-import type { VentaInventarioRow } from '../../domain/venta_inventario/venta_inventario.domain.js';
+import type { VentaInventarioRow, VentaLoteRow } from '../../domain/venta_inventario/venta_inventario.domain.js';
 
 export class VentaInventarioRepository {
 
@@ -59,5 +59,28 @@ export class VentaInventarioRepository {
       'UPDATE ventas_inventario SET esta_cancelada = 1 WHERE id = ?',
       [id]
     );
+  }
+
+  // ────────────────────────────────────────────────────────────────────────
+  // VENTAS-LOTES — Trazabilidad FEFO
+  // ────────────────────────────────────────────────────────────────────────
+
+  async createVentaLote(
+    connection: PoolConnection,
+    id: string, ventaId: string, loteId: string, cantidad: number
+  ): Promise<void> {
+    await connection.execute(
+      `INSERT INTO ventas_inventario_lotes (id, venta_id, lote_id, cantidad) 
+       VALUES (?, ?, ?, ?)`,
+      [id, ventaId, loteId, cantidad]
+    );
+  }
+
+  async findLotesByVentaId(ventaId: string): Promise<VentaLoteRow[]> {
+    const [rows] = await pool.execute<any[]>(
+      `SELECT * FROM ventas_inventario_lotes WHERE venta_id = ?`,
+      [ventaId]
+    );
+    return rows;
   }
 }
