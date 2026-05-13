@@ -110,6 +110,13 @@ export interface InventarioCodigoBarrasEntity {
   fechaCreacion: Date;
 }
 
+export interface InventarioAutocompleteResult {
+  id: string;
+  nombre: string;
+  precioVenta: number;
+  stockTotal: number;
+}
+
 // ==========================================
 // 4. MAPPERS
 // ==========================================
