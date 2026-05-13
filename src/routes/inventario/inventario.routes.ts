@@ -6,6 +6,7 @@ const inventarioController = new InventarioController();
 
 router.get('/clinica/:clinicaId',                inventarioController.getAllByClinica);
 router.get('/clinica/:clinicaId/productos-venta', inventarioController.getProductosVentaByClinica);
+router.get('/clinica/:clinicaId/buscar-productos', inventarioController.buscarProductosVentaAutocomplete);
 router.get('/:id',                               inventarioController.getById);
 router.post('/',                                 inventarioController.create);
 router.patch('/:id',                             inventarioController.update);
