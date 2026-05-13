@@ -954,6 +954,10 @@ components:
         productoId:
           type: string
           format: uuid
+        productoNombre:
+          type: string
+          nullable: true
+          example: "Crema de Urea 40%"
         cantidad:
           type: integer
           minimum: 1
@@ -3449,6 +3453,53 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/InventarioEntity'
+
+  /api/inventario/clinica/{clinicaId}/buscar-productos:
+    get:
+      summary: Buscar productos de venta por nombre para Autocomplete
+      description: Devuelve resultados optimizados (id, nombre, precioVenta, stockTotal) buscando por nombre dentro de los productos de venta activos de la clínica.
+      tags:
+        - Inventario
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: clinicaId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: termino
+          required: true
+          schema:
+            type: string
+            example: "Crema"
+      responses:
+        '200':
+          description: Lista optimizada de productos encontrados
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        nombre:
+                          type: string
+                        precioVenta:
+                          type: number
+                          format: float
+                        stockTotal:
+                          type: integer
 
   /api/inventario/{id}:
     parameters:
