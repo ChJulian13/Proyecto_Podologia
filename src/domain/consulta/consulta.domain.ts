@@ -64,6 +64,7 @@ export interface ConsultaRecetaRow {
   id: string;
   consulta_id: string;
   producto_id: string;
+  producto_nombre?: string;
   cantidad: number;
   precio_unitario_venta: number | null;
   indicaciones_uso: string | null;
@@ -93,6 +94,7 @@ export interface ConsultaRecetaEntity {
   id: string;
   consultaId: string;
   productoId: string;
+  productoNombre?: string;
   cantidad: number;
   precioUnitarioVenta: number | null;
   indicacionesUso: string | null;
@@ -123,6 +125,7 @@ export const mapRecetaRowToEntity = (row: ConsultaRecetaRow): ConsultaRecetaEnti
   id: row.id,
   consultaId: row.consulta_id,
   productoId: row.producto_id,
+  productoNombre: row.producto_nombre,
   cantidad: row.cantidad,
   precioUnitarioVenta: row.precio_unitario_venta !== null ? Number(row.precio_unitario_venta) : null,
   indicacionesUso: row.indicaciones_uso,
