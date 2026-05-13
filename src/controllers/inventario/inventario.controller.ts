@@ -30,6 +30,17 @@ export class InventarioController {
     }
   };
 
+  buscarProductosVentaAutocomplete = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { clinicaId } = req.params as Record<string, string>;
+      const termino = req.query.termino as string || '';
+      const result = await this.inventarioService.buscarProductosVentaAutocomplete(clinicaId!, termino);
+      res.status(200).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   getById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params as Record<string, string>;
