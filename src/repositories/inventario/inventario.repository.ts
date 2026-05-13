@@ -4,6 +4,7 @@ import type {
   InventarioRow,
   InventarioLoteRow,
   InventarioCodigoBarrasRow,
+  InventarioAutocompleteResult,
 } from '../../domain/inventario/inventario.domain.js';
 
 export class InventarioRepository {
@@ -55,6 +56,33 @@ export class InventarioRepository {
       [id]
     );
     return rows[0] ?? null;
+  }
+
+  async buscarProductosVentaAutocomplete(clinicaId: string, termino: string): Promise<InventarioAutocompleteResult[]> {
+    const [rows] = await pool.execute<any[]>(
+      `SELECT 
+          i.id, 
+          i.nombre, 
+          i.precio_venta AS precioVenta, 
+          COALESCE(SUM(il.stock_cantidad), 0) AS stockTotal
+      FROM inventario i
+      LEFT JOIN inventario_lotes il ON i.id = il.inventario_id
+      INNER JOIN categorias_inventario ci ON i.categoria_id = ci.id
+      WHERE i.clinica_id = ? 
+        AND ci.nombre = 'Producto de Venta'
+        AND i.nombre LIKE ?
+        AND i.esta_activo = 1
+      GROUP BY i.id
+      LIMIT 15`,
+      [clinicaId, `%${termino}%`]
+    );
+
+    return rows.map(row => ({
+      id: row.id,
+      nombre: row.nombre,
+      precioVenta: row.precioVenta !== null ? parseFloat(row.precioVenta) : 0,
+      stockTotal: Number(row.stockTotal)
+    }));
   }
 
   // ────────────────────────────────────────────────────────────────────────
