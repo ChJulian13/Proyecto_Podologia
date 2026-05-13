@@ -24,7 +24,10 @@ export class ConsultaRepository {
 
   async findRecetasByConsultaId(consultaId: string): Promise<ConsultaRecetaRow[]> {
     const [rows] = await pool.execute<any[]>(
-      `SELECT * FROM consulta_recetas WHERE consulta_id = ?`,
+      `SELECT cr.*, i.nombre AS producto_nombre 
+       FROM consulta_recetas cr
+       LEFT JOIN inventario i ON cr.producto_id = i.id
+       WHERE cr.consulta_id = ?`,
       [consultaId]
     );
     return rows as ConsultaRecetaRow[];
@@ -199,7 +202,10 @@ export class ConsultaRepository {
 
   async findRecetaById(recetaId: string): Promise<ConsultaRecetaRow | null> {
     const [rows] = await pool.execute<any[]>(
-      `SELECT * FROM consulta_recetas WHERE id = ? LIMIT 1`,
+      `SELECT cr.*, i.nombre AS producto_nombre 
+       FROM consulta_recetas cr
+       LEFT JOIN inventario i ON cr.producto_id = i.id
+       WHERE cr.id = ? LIMIT 1`,
       [recetaId]
     );
     return rows[0] ?? null;
