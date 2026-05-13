@@ -14,6 +14,7 @@ import {
   type InventarioEntity,
   type InventarioLoteEntity,
   type InventarioCodigoBarrasEntity,
+  type InventarioAutocompleteResult,
 } from '../../domain/inventario/inventario.domain.js';
 
 export class InventarioService {
@@ -39,6 +40,13 @@ export class InventarioService {
     const row = await this.inventarioRepository.findById(id);
     if (!row) throw new NotFoundError('Artículo de inventario');
     return mapInventarioRowToEntity(row);
+  }
+
+  async buscarProductosVentaAutocomplete(clinicaId: string, termino: string): Promise<InventarioAutocompleteResult[]> {
+    if (!termino || termino.trim().length < 2) {
+      return [];
+    }
+    return await this.inventarioRepository.buscarProductosVentaAutocomplete(clinicaId, termino.trim());
   }
 
   // ────────────────────────────────────────────────────────────────────────
