@@ -2,7 +2,8 @@ import crypto from 'crypto';
 import { InventarioRepository } from '../../repositories/inventario/inventario.repository.js';
 import { ClinicaRepository } from '../../repositories/clinica/clinica.repository.js';
 import { CategoriaInventarioRepository } from '../../repositories/categoria_inventario/categoria_inventario.repository.js';
-import { NotFoundError, BadRequestError } from '../../common/errors/domain.errors.js';
+import { NotFoundError, BadRequestError, ForbiddenError } from '../../common/errors/domain.errors.js';
+import type { RolUsuario } from '../../domain/usuario/usuario.domain.js';
 import {
   mapInventarioRowToEntity,
   mapLoteRowToEntity,
@@ -26,26 +27,27 @@ export class InventarioService {
   // INVENTARIO — Lectura
   // ────────────────────────────────────────────────────────────────────────
 
-  async getAllByClinica(clinicaId: string): Promise<InventarioEntity[]> {
-    const rows = await this.inventarioRepository.findAllByClinica(clinicaId);
-    return rows.map(mapInventarioRowToEntity);
+  async getAllByClinica(clinicaId: string, rol: string): Promise<InventarioEntity[]> {
+    const rows = await this.inventarioRepository.findAllByClinica(clinicaId, rol);
+    return rows.map(row => mapInventarioRowToEntity(row, rol));
   }
 
-  async getProductosVentaByClinica(clinicaId: string): Promise<InventarioEntity[]> {
+  async getProductosVentaByClinica(clinicaId: string, rol: string): Promise<InventarioEntity[]> {
     const rows = await this.inventarioRepository.findProductosVentaByClinica(clinicaId);
-    return rows.map(mapInventarioRowToEntity);
+    return rows.map(row => mapInventarioRowToEntity(row, rol));
   }
 
-  async getById(id: string): Promise<InventarioEntity> {
+  async getById(id: string, rol: string): Promise<InventarioEntity> {
     const row = await this.inventarioRepository.findById(id);
     if (!row) throw new NotFoundError('Artículo de inventario');
-    return mapInventarioRowToEntity(row);
+    return mapInventarioRowToEntity(row, rol);
   }
 
-  async buscarProductosVentaAutocomplete(clinicaId: string, termino: string): Promise<InventarioAutocompleteResult[]> {
+  async buscarProductosVentaAutocomplete(clinicaId: string, termino: string, rol: string): Promise<InventarioAutocompleteResult[]> {
     if (!termino || termino.trim().length < 2) {
       return [];
     }
+    // El repositorio solo devuelve id, nombre, precioVenta y stockTotal (no incluye precioCompra)
     return await this.inventarioRepository.buscarProductosVentaAutocomplete(clinicaId, termino.trim());
   }
 
@@ -53,7 +55,11 @@ export class InventarioService {
   // INVENTARIO — Escritura (Catálogo)
   // ────────────────────────────────────────────────────────────────────────
 
-  async create(data: CreateInventarioDTO): Promise<InventarioEntity> {
+  async create(data: CreateInventarioDTO, rol: string): Promise<InventarioEntity> {
+    if (rol !== 'ADMINISTRADOR') {
+      throw new ForbiddenError('No tienes permisos para crear artículos en el catálogo');
+    }
+
     // Verificar que la clínica exista
     const clinica = await this.clinicaRepository.findById(data.clinica_id);
     if (!clinica) throw new NotFoundError('Clínica');
@@ -80,10 +86,14 @@ export class InventarioService {
       data.ubicacion ?? null
     );
 
-    return await this.getById(newId);
+    return await this.getById(newId, rol);
   }
 
-  async update(id: string, data: UpdateInventarioDTO): Promise<InventarioEntity> {
+  async update(id: string, data: UpdateInventarioDTO, rol: string): Promise<InventarioEntity> {
+    if (rol !== 'ADMINISTRADOR') {
+      throw new ForbiddenError('No tienes permisos para actualizar artículos en el catálogo');
+    }
+
     const existingRow = await this.inventarioRepository.findById(id);
     if (!existingRow) throw new NotFoundError('Artículo de inventario');
 
@@ -108,10 +118,14 @@ export class InventarioService {
     if (data.ubicacion !== undefined) updateData.ubicacion = data.ubicacion ?? null;
 
     await this.inventarioRepository.update(id, updateData);
-    return await this.getById(id);
+    return await this.getById(id, rol);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string, rol: string): Promise<void> {
+    if (rol !== 'ADMINISTRADOR') {
+      throw new ForbiddenError('No tienes permisos para desactivar artículos del catálogo');
+    }
+
     const existing = await this.inventarioRepository.findById(id);
     if (!existing) throw new NotFoundError('Artículo de inventario');
 
@@ -122,7 +136,11 @@ export class InventarioService {
   // LOTES — Gestión de existencias
   // ────────────────────────────────────────────────────────────────────────
 
-  async createLote(inventarioId: string, data: CreateLoteDTO): Promise<InventarioLoteEntity> {
+  async createLote(inventarioId: string, data: CreateLoteDTO, rol: string): Promise<InventarioLoteEntity> {
+    if (rol !== 'ADMINISTRADOR' && rol !== 'RECEPCIONISTA') {
+      throw new ForbiddenError('No tienes permisos para registrar lotes');
+    }
+
     const item = await this.inventarioRepository.findById(inventarioId);
     if (!item) throw new NotFoundError('Artículo de inventario');
 
@@ -153,7 +171,11 @@ export class InventarioService {
   // CÓDIGOS DE BARRAS
   // ────────────────────────────────────────────────────────────────────────
 
-  async createCodigoBarras(inventarioId: string, data: CreateCodigoBarrasDTO): Promise<InventarioCodigoBarrasEntity> {
+  async createCodigoBarras(inventarioId: string, data: CreateCodigoBarrasDTO, rol: string): Promise<InventarioCodigoBarrasEntity> {
+    if (rol !== 'ADMINISTRADOR') {
+      throw new ForbiddenError('No tienes permisos para crear códigos de barras');
+    }
+
     const item = await this.inventarioRepository.findById(inventarioId);
     if (!item) throw new NotFoundError('Artículo de inventario');
 
@@ -178,7 +200,11 @@ export class InventarioService {
     return rows.map(mapCodigoBarrasRowToEntity);
   }
 
-  async deleteCodigoBarras(inventarioId: string, codigoId: string): Promise<void> {
+  async deleteCodigoBarras(inventarioId: string, codigoId: string, rol: string): Promise<void> {
+    if (rol !== 'ADMINISTRADOR') {
+      throw new ForbiddenError('No tienes permisos para eliminar códigos de barras');
+    }
+
     const item = await this.inventarioRepository.findById(inventarioId);
     if (!item) throw new NotFoundError('Artículo de inventario');
 
