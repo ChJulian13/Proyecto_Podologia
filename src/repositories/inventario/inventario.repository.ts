@@ -28,10 +28,17 @@ export class InventarioRepository {
   // INVENTARIO — Lectura
   // ────────────────────────────────────────────────────────────────────────
 
-  async findAllByClinica(clinicaId: string): Promise<InventarioRow[]> {
+  async findAllByClinica(clinicaId: string, rol?: string): Promise<InventarioRow[]> {
+    let categoryFilter = '';
+    if (rol === 'PODOLOGO') {
+      categoryFilter = ` AND ci.nombre IN ('Producto de Venta', 'Consumible Médico')`;
+    } else if (rol === 'RECEPCIONISTA') {
+      categoryFilter = ` AND ci.nombre IN ('Producto de Venta', 'Mantenimiento y Limpieza')`;
+    }
+
     const [rows] = await pool.execute<any[]>(
       `${this.selectQuery} 
-       WHERE i.clinica_id = ? AND i.esta_activo = 1 
+       WHERE i.clinica_id = ? AND i.esta_activo = 1 ${categoryFilter}
        ${this.groupBy}
        ORDER BY i.nombre ASC`,
       [clinicaId]
