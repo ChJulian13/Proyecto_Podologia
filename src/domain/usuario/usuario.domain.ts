@@ -4,7 +4,7 @@ import { buildNombreCompleto } from '../../common/utils/name.utils.js';
 // ==========================================
 // 1. CAPA DE VALIDACIÓN (DTOs) - Se mantiene igual
 // ==========================================
-export const UsuarioRol = z.enum(['ADMINISTRADOR', 'PODOLOGO', 'RECEPCIONISTA']);
+export const UsuarioRol = z.enum(['ADMINISTRADOR', 'PODOLOGO', 'RECEPCIONISTA', 'CONTADOR']);
 export type RolUsuario = z.infer<typeof UsuarioRol>;
 
 export const CreateUsuarioSchema = z.object({
