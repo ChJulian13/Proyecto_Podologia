@@ -94,7 +94,7 @@ export interface ConsultaRecetaEntity {
   id: string;
   consultaId: string;
   productoId: string;
-  productoNombre?: string;
+  productoNombre?: string | undefined;
   cantidad: number;
   precioUnitarioVenta: number | null;
   indicacionesUso: string | null;
