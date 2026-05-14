@@ -193,6 +193,7 @@ components:
           type: number
           format: float
           nullable: true
+          description: "Solo visible para roles ADMINISTRADOR y CONTADOR"
           example: 120.50
         precioVenta:
           type: number
