@@ -83,7 +83,7 @@ export interface InventarioEntity {
   };
   nombre: string;
   descripcion: string | null;
-  precioCompra: number | null;
+  precioCompra?: number | null;
   precioVenta: number | null;
   requiereLote: boolean;
   requiereCaducidad: boolean;
@@ -120,25 +120,33 @@ export interface InventarioAutocompleteResult {
 // ==========================================
 // 4. MAPPERS
 // ==========================================
-export const mapInventarioRowToEntity = (row: InventarioRow): InventarioEntity => ({
-  id: row.id,
-  clinicaId: row.clinica_id,
-  categoria: {
-    id: row.categoria_id,
-    nombre: row.categoria_nombre || 'Categoría Desconocida',
-  },
-  nombre: row.nombre,
-  descripcion: row.descripcion,
-  precioCompra: row.precio_compra !== null ? parseFloat(row.precio_compra) : null,
-  precioVenta: row.precio_venta !== null ? parseFloat(row.precio_venta) : null,
-  requiereLote: row.requiere_lote === 1,
-  requiereCaducidad: row.requiere_caducidad === 1,
-  ubicacion: row.ubicacion,
-  estaActivo: row.esta_activo === 1,
-  stockTotal: row.stock_total ?? 0,
-  fechaCreacion: row.fecha_creacion,
-  fechaActualizacion: row.fecha_actualizacion,
-});
+export const mapInventarioRowToEntity = (row: InventarioRow, rol?: string): InventarioEntity => {
+  const entity: InventarioEntity = {
+    id: row.id,
+    clinicaId: row.clinica_id,
+    categoria: {
+      id: row.categoria_id,
+      nombre: row.categoria_nombre || 'Categoría Desconocida',
+    },
+    nombre: row.nombre,
+    descripcion: row.descripcion,
+    precioCompra: row.precio_compra !== null ? parseFloat(row.precio_compra) : null,
+    precioVenta: row.precio_venta !== null ? parseFloat(row.precio_venta) : null,
+    requiereLote: row.requiere_lote === 1,
+    requiereCaducidad: row.requiere_caducidad === 1,
+    ubicacion: row.ubicacion,
+    estaActivo: row.esta_activo === 1,
+    stockTotal: row.stock_total ?? 0,
+    fechaCreacion: row.fecha_creacion,
+    fechaActualizacion: row.fecha_actualizacion,
+  };
+
+  if (rol === 'PODOLOGO' || rol === 'RECEPCIONISTA') {
+    delete entity.precioCompra;
+  }
+
+  return entity;
+};
 
 export const mapLoteRowToEntity = (row: InventarioLoteRow): InventarioLoteEntity => ({
   id: row.id,
