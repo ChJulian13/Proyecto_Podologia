@@ -6,14 +6,17 @@ import {
   CreateLoteSchema,
   CreateCodigoBarrasSchema,
 } from '../../domain/inventario/inventario.domain.js';
+import type { AuthRequest } from '../../middleware/auth/auth.middleware.js';
+import { ForbiddenError } from '../../common/errors/domain.errors.js';
 
 export class InventarioController {
   private inventarioService = new InventarioService();
 
   getAllByClinica = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const rol = (req as AuthRequest).usuario!.rol;
       const { clinicaId } = req.params as Record<string, string>;
-      const inventario = await this.inventarioService.getAllByClinica(clinicaId!);
+      const inventario = await this.inventarioService.getAllByClinica(clinicaId!, rol);
       res.status(200).json({ success: true, data: inventario });
     } catch (error) {
       next(error);
@@ -22,8 +25,12 @@ export class InventarioController {
 
   getProductosVentaByClinica = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const rol = (req as AuthRequest).usuario!.rol;
+      if (rol === 'CONTADOR' || rol === 'RECEPCIONISTA') {
+        throw new ForbiddenError('No tienes permisos para consultar la lista de productos de venta');
+      }
       const { clinicaId } = req.params as Record<string, string>;
-      const productos = await this.inventarioService.getProductosVentaByClinica(clinicaId!);
+      const productos = await this.inventarioService.getProductosVentaByClinica(clinicaId!, rol);
       res.status(200).json({ success: true, data: productos });
     } catch (error) {
       next(error);
@@ -32,9 +39,13 @@ export class InventarioController {
 
   buscarProductosVentaAutocomplete = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const rol = (req as AuthRequest).usuario!.rol;
+      if (rol === 'CONTADOR' || rol === 'RECEPCIONISTA') {
+        throw new ForbiddenError('No tienes permisos para buscar productos de venta');
+      }
       const { clinicaId } = req.params as Record<string, string>;
       const termino = req.query.termino as string || '';
-      const result = await this.inventarioService.buscarProductosVentaAutocomplete(clinicaId!, termino);
+      const result = await this.inventarioService.buscarProductosVentaAutocomplete(clinicaId!, termino, rol);
       res.status(200).json({ success: true, data: result });
     } catch (error) {
       next(error);
@@ -43,8 +54,9 @@ export class InventarioController {
 
   getById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const rol = (req as AuthRequest).usuario!.rol;
       const { id } = req.params as Record<string, string>;
-      const item = await this.inventarioService.getById(id!);
+      const item = await this.inventarioService.getById(id!, rol);
       res.status(200).json({ success: true, data: item });
     } catch (error) {
       next(error);
@@ -53,8 +65,9 @@ export class InventarioController {
 
   create = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const rol = (req as AuthRequest).usuario!.rol;
       const validatedData = CreateInventarioSchema.parse(req.body);
-      const nuevoItem = await this.inventarioService.create(validatedData);
+      const nuevoItem = await this.inventarioService.create(validatedData, rol);
       res.status(201).json({ success: true, message: 'Artículo registrado exitosamente', data: nuevoItem });
     } catch (error) {
       next(error);
@@ -63,9 +76,10 @@ export class InventarioController {
 
   update = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const rol = (req as AuthRequest).usuario!.rol;
       const { id } = req.params as Record<string, string>;
       const validatedData = UpdateInventarioSchema.parse(req.body);
-      const itemActualizado = await this.inventarioService.update(id!, validatedData);
+      const itemActualizado = await this.inventarioService.update(id!, validatedData, rol);
       res.status(200).json({ success: true, message: 'Artículo actualizado', data: itemActualizado });
     } catch (error) {
       next(error);
@@ -74,8 +88,9 @@ export class InventarioController {
 
   delete = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const rol = (req as AuthRequest).usuario!.rol;
       const { id } = req.params as Record<string, string>;
-      await this.inventarioService.delete(id!);
+      await this.inventarioService.delete(id!, rol);
       res.status(200).json({ success: true, message: 'Artículo desactivado exitosamente' });
     } catch (error) {
       next(error);
@@ -98,9 +113,10 @@ export class InventarioController {
 
   createLote = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const rol = (req as AuthRequest).usuario!.rol;
       const { id } = req.params as Record<string, string>;
       const validatedData = CreateLoteSchema.parse(req.body);
-      const nuevoLote = await this.inventarioService.createLote(id!, validatedData);
+      const nuevoLote = await this.inventarioService.createLote(id!, validatedData, rol);
       res.status(201).json({ success: true, message: 'Lote registrado exitosamente', data: nuevoLote });
     } catch (error) {
       next(error);
@@ -123,9 +139,10 @@ export class InventarioController {
 
   createCodigoBarras = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const rol = (req as AuthRequest).usuario!.rol;
       const { id } = req.params as Record<string, string>;
       const validatedData = CreateCodigoBarrasSchema.parse(req.body);
-      const nuevoCodigo = await this.inventarioService.createCodigoBarras(id!, validatedData);
+      const nuevoCodigo = await this.inventarioService.createCodigoBarras(id!, validatedData, rol);
       res.status(201).json({ success: true, message: 'Código de barras registrado exitosamente', data: nuevoCodigo });
     } catch (error) {
       next(error);
@@ -134,8 +151,9 @@ export class InventarioController {
 
   deleteCodigoBarras = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const rol = (req as AuthRequest).usuario!.rol;
       const { id, codigoId } = req.params as Record<string, string>;
-      await this.inventarioService.deleteCodigoBarras(id!, codigoId!);
+      await this.inventarioService.deleteCodigoBarras(id!, codigoId!, rol);
       res.status(200).json({ success: true, message: 'Código de barras eliminado exitosamente' });
     } catch (error) {
       next(error);
