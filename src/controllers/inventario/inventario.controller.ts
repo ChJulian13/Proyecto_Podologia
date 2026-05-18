@@ -116,8 +116,17 @@ export class InventarioController {
       const rol = (req as AuthRequest).usuario!.rol;
       const { id } = req.params as Record<string, string>;
       const validatedData = CreateLoteSchema.parse(req.body);
-      const nuevoLote = await this.inventarioService.createLote(id!, validatedData, rol);
-      res.status(201).json({ success: true, message: 'Lote registrado exitosamente', data: nuevoLote });
+      const resultado = await this.inventarioService.createLote(id!, validatedData, rol);
+
+      const { esNuevo, ...lote } = resultado;
+
+      res.status(esNuevo ? 201 : 200).json({
+        success: true,
+        message: esNuevo
+          ? 'Lote registrado exitosamente'
+          : `Stock acumulado en lote existente "${lote.numeroLote}". Total actualizado.`,
+        data: lote,
+      });
     } catch (error) {
       next(error);
     }
