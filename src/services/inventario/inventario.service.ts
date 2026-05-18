@@ -136,7 +136,11 @@ export class InventarioService {
   // LOTES — Gestión de existencias
   // ────────────────────────────────────────────────────────────────────────
 
-  async createLote(inventarioId: string, data: CreateLoteDTO, rol: string): Promise<InventarioLoteEntity> {
+  async createLote(
+    inventarioId: string,
+    data: CreateLoteDTO,
+    rol: string
+  ): Promise<InventarioLoteEntity & { esNuevo: boolean }> {
     if (rol !== 'ADMINISTRADOR' && rol !== 'RECEPCIONISTA') {
       throw new ForbiddenError('No tienes permisos para registrar lotes');
     }
@@ -146,7 +150,7 @@ export class InventarioService {
 
     const newId = crypto.randomUUID();
 
-    await this.inventarioRepository.createLote(
+    const { id: loteId, esNuevo } = await this.inventarioRepository.createLote(
       newId,
       inventarioId,
       data.numero_lote,
@@ -155,8 +159,9 @@ export class InventarioService {
     );
 
     const lotes = await this.inventarioRepository.findLotesByInventarioId(inventarioId);
-    const loteCreado = lotes.find(l => l.id === newId);
-    return mapLoteRowToEntity(loteCreado!);
+    const lote = lotes.find(l => l.id === loteId)!;
+
+    return { ...mapLoteRowToEntity(lote), esNuevo };
   }
 
   async getLotesByProducto(inventarioId: string): Promise<InventarioLoteEntity[]> {
