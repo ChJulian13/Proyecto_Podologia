@@ -152,12 +152,33 @@ export class InventarioRepository {
   async createLote(
     id: string, inventarioId: string, numeroLote: string,
     fechaCaducidad: string | null, stockCantidad: number
-  ): Promise<void> {
+  ): Promise<{ id: string; esNuevo: boolean }> {
+    // Verificar si ya existe el lote para este producto
+    const [existing] = await pool.execute<any[]>(
+      `SELECT id FROM inventario_lotes
+     WHERE inventario_id = ? AND numero_lote = ? LIMIT 1`,
+      [inventarioId, numeroLote]
+    );
+
+    if (existing.length > 0) {
+      // Lote existente → acumular stock (es el mismo lote físico del fabricante)
+      await pool.execute(
+        `UPDATE inventario_lotes
+       SET stock_cantidad = stock_cantidad + ?
+       WHERE inventario_id = ? AND numero_lote = ?`,
+        [stockCantidad, inventarioId, numeroLote]
+      );
+      return { id: existing[0].id, esNuevo: false };
+    }
+
+    // Lote nuevo → insertar normalmente
     await pool.execute(
-      `INSERT INTO inventario_lotes (id, inventario_id, numero_lote, fecha_caducidad, stock_cantidad) 
-       VALUES (?, ?, ?, ?, ?)`,
+      `INSERT INTO inventario_lotes
+       (id, inventario_id, numero_lote, fecha_caducidad, stock_cantidad)
+     VALUES (?, ?, ?, ?, ?)`,
       [id, inventarioId, numeroLote, fechaCaducidad, stockCantidad]
     );
+    return { id, esNuevo: true };
   }
 
   async findLotesByInventarioId(inventarioId: string): Promise<InventarioLoteRow[]> {
