@@ -148,6 +148,19 @@ export class InventarioService {
     const item = await this.inventarioRepository.findById(inventarioId);
     if (!item) throw new NotFoundError('Artículo de inventario');
 
+    // Validar que el artículo tenga habilitado el control por lote
+    if (!item.requiere_lote) {
+      throw new BadRequestError('Este artículo no requiere control por número de lote');
+    }
+
+    // Validar coherencia de fecha de caducidad con la configuración del artículo
+    if (data.fecha_caducidad && !item.requiere_caducidad) {
+      throw new BadRequestError('Este artículo no requiere control de fecha de caducidad');
+    }
+    if (!data.fecha_caducidad && item.requiere_caducidad) {
+      throw new BadRequestError('Este artículo requiere una fecha de caducidad');
+    }
+
     const newId = crypto.randomUUID();
 
     const { id: loteId, esNuevo } = await this.inventarioRepository.createLote(
