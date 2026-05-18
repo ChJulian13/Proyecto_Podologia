@@ -98,7 +98,7 @@ export interface InventarioLoteEntity {
   id: string;
   inventarioId: string;
   numeroLote: string;
-  fechaCaducidad: Date | null;
+  fechaCaducidad: String | null;
   stockCantidad: number;
   fechaIngreso: Date;
 }
@@ -152,7 +152,9 @@ export const mapLoteRowToEntity = (row: InventarioLoteRow): InventarioLoteEntity
   id: row.id,
   inventarioId: row.inventario_id,
   numeroLote: row.numero_lote,
-  fechaCaducidad: row.fecha_caducidad,
+  fechaCaducidad: row.fecha_caducidad
+    ? String(row.fecha_caducidad).substring(0, 10)
+    : null,
   stockCantidad: row.stock_cantidad,
   fechaIngreso: row.fecha_ingreso,
 });
