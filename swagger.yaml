@@ -3603,7 +3603,14 @@ paths:
           description: Artículo no encontrado
     post:
       summary: Registrar un nuevo lote de existencias
-      description: Ingresa mercancía al inventario creando un registro de lote con número, caducidad y cantidad.
+      description: |
+        Ingresa mercancía al inventario creando un registro de lote con número, caducidad y cantidad.
+
+        **Reglas de negocio:**
+        - El artículo debe tener `requiere_lote = true`. Si no, se devuelve `400`.
+        - Si el artículo tiene `requiere_caducidad = true`, la `fecha_caducidad` es **obligatoria**. Si se omite, se devuelve `400`.
+        - Si el artículo tiene `requiere_caducidad = false`, la `fecha_caducidad` **no debe enviarse**. Si se incluye, se devuelve `400`.
+        - Si el `numero_lote` ya existe para ese artículo, el stock se **acumula** en el lote existente en lugar de crear uno nuevo (`200` en vez de `201`).
       tags:
         - Inventario
       security:
@@ -3616,7 +3623,7 @@ paths:
               $ref: '#/components/schemas/CreateLoteDTO'
       responses:
         '201':
-          description: Lote registrado exitosamente
+          description: Lote nuevo registrado exitosamente
           content:
             application/json:
               schema:
@@ -3624,8 +3631,31 @@ paths:
                 properties:
                   success:
                     type: boolean
+                  message:
+                    type: string
+                    example: "Lote registrado exitosamente"
                   data:
                     $ref: '#/components/schemas/InventarioLoteEntity'
+        '200':
+          description: El número de lote ya existía — stock acumulado en el lote existente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: "Stock acumulado en lote existente \"LOTE-2026-A01\". Total actualizado."
+                  data:
+                    $ref: '#/components/schemas/InventarioLoteEntity'
+        '400':
+          description: |
+            Error de validación de reglas de negocio. Posibles causas:
+            - El artículo no requiere control por número de lote (`requiere_lote = false`).
+            - El artículo requiere fecha de caducidad pero no se proporcionó.
+            - El artículo no requiere fecha de caducidad pero se proporcionó una.
         '404':
           description: Artículo no encontrado
 
