@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { ConsultaRepository } from '../../repositories/consulta/consulta.repository.js';
-import { NotFoundError } from '../../common/errors/domain.errors.js';
+import { CitaRepository } from '../../repositories/cita/cita.repository.js';
+import { NotFoundError, ConflictError, BadRequestError } from '../../common/errors/domain.errors.js';
 import {
   mapConsultaRowToEntity,
   mapRecetaRowToEntity,
@@ -13,10 +14,25 @@ import {
 
 export class ConsultaService {
   private consultaRepository = new ConsultaRepository();
+  private citaRepository = new CitaRepository();
 
   // ── POST /api/consultas — Creación transaccional ──────────────────────────
 
   async create(data: CreateConsultaDTO): Promise<string> {
+    // 1. Verificar que la cita exista y pertenezca a la misma clínica
+    const cita = await this.citaRepository.findById(data.cita_id);
+    if (!cita) throw new NotFoundError('Cita');
+    if (cita.clinica_id !== data.clinica_id) {
+      throw new BadRequestError('La cita no pertenece a la clínica indicada');
+    }
+
+    // 2. Verificar que no exista ya una consulta para esta cita (UNIQUE KEY en BD)
+    const consultaExistente = await this.consultaRepository.findByCitaId(data.cita_id);
+    if (consultaExistente) {
+      throw new ConflictError('Ya existe una consulta registrada para esta cita');
+    }
+
+    // 3. Crear la consulta
     const newId = crypto.randomUUID();
     await this.consultaRepository.createWithTransaction(data, newId);
     return newId;
@@ -34,8 +50,8 @@ export class ConsultaService {
 
   // ── GET /api/consultas/paciente/:pacienteId — Historial clínico ───────────
 
-  async getByPaciente(pacienteId: string): Promise<ConsultaEntity[]> {
-    const rows = await this.consultaRepository.findByPacienteId(pacienteId);
+  async getByPaciente(pacienteId: string, clinicaId: string): Promise<ConsultaEntity[]> {
+    const rows = await this.consultaRepository.findByPacienteId(pacienteId, clinicaId);
 
     // Enriquecer cada consulta con sus recetas
     const entities = await Promise.all(
