@@ -41,10 +41,10 @@ export class ConsultaRepository {
     return rows[0] ?? null;
   }
 
-  async findByPacienteId(pacienteId: string): Promise<ConsultaRow[]> {
+  async findByPacienteId(pacienteId: string, clinicaId: string): Promise<ConsultaRow[]> {
     const [rows] = await pool.execute<any[]>(
-      `SELECT * FROM consultas WHERE paciente_id = ? ORDER BY fecha_registro DESC`,
-      [pacienteId]
+      `SELECT * FROM consultas WHERE paciente_id = ? AND clinica_id = ? ORDER BY fecha_registro DESC`,
+      [pacienteId, clinicaId]
     );
     return rows as ConsultaRow[];
   }
@@ -89,20 +89,19 @@ export class ConsultaRepository {
   ): Promise<void> {
     await connection.execute(
       `INSERT INTO consultas (
-        id, cita_id, paciente_id, podologo_id, servicio_id,
+        id, clinica_id, cita_id, paciente_id, podologo_id, servicio_id,
         diagnostico, procedimiento_detallado, indicaciones_cuidado,
         fecha_proxima_consulta,
-        requiere_consentimiento, consentimiento_firmado,
         monto_procedimiento
       ) VALUES (
-        ?, ?, ?, ?, ?,
+        ?, ?, ?, ?, ?, ?,
         ?, ?, ?,
         ?,
-        ?, ?,
         ?
       )`,
       [
         id,
+        data.clinica_id,
         data.cita_id,
         data.paciente_id,
         data.podologo_id,
@@ -111,8 +110,6 @@ export class ConsultaRepository {
         data.procedimiento_detallado ?? null,
         data.indicaciones_cuidado ?? null,
         data.fecha_proxima_consulta ?? null,
-        data.requiere_consentimiento ? 1 : 0,
-        data.consentimiento_firmado ? 1 : 0,
         data.monto_procedimiento ?? null,
       ]
     );
@@ -149,12 +146,8 @@ export class ConsultaRepository {
       'procedimiento_detallado',
       'indicaciones_cuidado',
       'fecha_proxima_consulta',
-      'requiere_consentimiento',
-      'consentimiento_firmado',
       'monto_procedimiento',
     ];
-
-    const booleanFields = new Set<string>(['requiere_consentimiento', 'consentimiento_firmado']);
 
     const fields: string[] = [];
     const values: any[] = [];
@@ -162,8 +155,7 @@ export class ConsultaRepository {
     for (const field of allowedFields) {
       if (data[field] !== undefined) {
         fields.push(`${field} = ?`);
-        const val = data[field];
-        values.push(booleanFields.has(field) ? (val ? 1 : 0) : (val ?? null));
+        values.push(data[field] ?? null);
       }
     }
 
