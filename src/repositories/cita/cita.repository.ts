@@ -47,7 +47,7 @@ export class CitaRepository {
       SELECT * FROM citas 
       WHERE podologo_id = ? 
         AND fecha_programada = ? 
-        AND estado IN ('PROGRAMADA', 'CONFIRMADA')
+        AND estado IN ('PROGRAMADA', 'CONFIRMADA', 'EN_CURSO')
         /* La hora de inicio en BD debe ser menor a la hora de FIN de la nueva cita */
         AND hora_programada < (CAST(? AS TIME) + INTERVAL ? MINUTE)
         /* La hora de FIN en BD debe ser mayor a la hora de INICIO de la nueva cita */
