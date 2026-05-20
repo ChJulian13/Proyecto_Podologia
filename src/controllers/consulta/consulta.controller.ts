@@ -5,6 +5,7 @@ import {
   UpdateConsultaSchema,
   CreateConsultaRecetaSchema,
 } from '../../domain/consulta/consulta.domain.js';
+import type { AuthRequest } from '../../middleware/auth/auth.middleware.js';
 
 export class ConsultaController {
   private consultaService = new ConsultaService();
@@ -13,7 +14,12 @@ export class ConsultaController {
 
   create = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const validatedData = CreateConsultaSchema.parse(req.body);
+      // Inyectar clinica_id desde el token (nunca confiar en el cliente)
+      const clinicaId = (req as AuthRequest).usuario!.clinicaId;
+      const validatedData = CreateConsultaSchema.parse({
+        ...req.body,
+        clinica_id: clinicaId,
+      });
       const consultaId = await this.consultaService.create(validatedData);
       res.status(201).json({
         success: true,
@@ -42,7 +48,8 @@ export class ConsultaController {
   getByPaciente = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { pacienteId } = req.params as Record<string, string>;
-      const consultas = await this.consultaService.getByPaciente(pacienteId!);
+      const clinicaId = (req as AuthRequest).usuario!.clinicaId!;
+      const consultas = await this.consultaService.getByPaciente(pacienteId!, clinicaId);
       res.status(200).json({ success: true, data: consultas });
     } catch (error) {
       next(error);
