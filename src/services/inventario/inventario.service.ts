@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import { InventarioRepository } from '../../repositories/inventario/inventario.repository.js';
 import { ClinicaRepository } from '../../repositories/clinica/clinica.repository.js';
 import { CategoriaInventarioRepository } from '../../repositories/categoria_inventario/categoria_inventario.repository.js';
-import { NotFoundError, BadRequestError, ForbiddenError } from '../../common/errors/domain.errors.js';
+import { NotFoundError, BadRequestError, ForbiddenError, ConflictError } from '../../common/errors/domain.errors.js';
 import type { RolUsuario } from '../../domain/usuario/usuario.domain.js';
 import {
   mapInventarioRowToEntity,
@@ -196,6 +196,12 @@ export class InventarioService {
 
     const item = await this.inventarioRepository.findById(inventarioId);
     if (!item) throw new NotFoundError('Artículo de inventario');
+
+    // Validar unicidad del código de barras dentro del mismo producto
+    const duplicado = await this.inventarioRepository.findCodigoBarraByProductoYCodigo(inventarioId, data.codigo_barra);
+    if (duplicado) {
+      throw new ConflictError('Este código de barras ya está registrado para este producto');
+    }
 
     const newId = crypto.randomUUID();
 
