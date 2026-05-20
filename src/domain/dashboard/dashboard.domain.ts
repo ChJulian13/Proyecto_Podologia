@@ -6,6 +6,7 @@ export interface ResumenHoyRow {
   totalCitasHoy: number;
   citasCompletadas: number;
   citasCanceladas: number;
+  citasNoAsistieron: number;
   ingresosEsperadosHoy: number;
 }
 
@@ -32,6 +33,7 @@ export interface ResumenHoyEntity {
   totalCitas: number;
   completadas: number;
   canceladas: number;
+  noAsistieron: number;
   ingresosEsperados: number;
 }
 
@@ -58,6 +60,7 @@ export const mapResumenToEntity = (row: ResumenHoyRow): ResumenHoyEntity => ({
   totalCitas: Number(row.totalCitasHoy),
   completadas: Number(row.citasCompletadas),
   canceladas: Number(row.citasCanceladas),
+  noAsistieron: Number(row.citasNoAsistieron),
   ingresosEsperados: Number(row.ingresosEsperadosHoy),
 });
 
