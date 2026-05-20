@@ -979,6 +979,9 @@ components:
         id:
           type: string
           format: uuid
+        clinicaId:
+          type: string
+          format: uuid
         citaId:
           type: string
           format: uuid
@@ -1009,12 +1012,6 @@ components:
           format: date
           nullable: true
           example: "2026-06-10"
-        requiereConsentimiento:
-          type: boolean
-          example: false
-        consentimientoFirmado:
-          type: boolean
-          example: false
         montoProcedimiento:
           type: number
           format: float
@@ -1056,10 +1053,14 @@ components:
     CreateConsultaDTO:
       type: object
       required:
+        - clinica_id
         - cita_id
         - paciente_id
         - podologo_id
       properties:
+        clinica_id:
+          type: string
+          format: uuid
         cita_id:
           type: string
           format: uuid
@@ -1099,12 +1100,6 @@ components:
           minimum: 0
           nullable: true
           example: 450.00
-        requiere_consentimiento:
-          type: boolean
-          default: false
-        consentimiento_firmado:
-          type: boolean
-          default: false
         recetas:
           type: array
           description: "Productos recetados. Se insertan en la misma transacción SQL."
@@ -1136,10 +1131,6 @@ components:
           format: float
           minimum: 0
           nullable: true
-        requiere_consentimiento:
-          type: boolean
-        consentimiento_firmado:
-          type: boolean
 
     CitaEntity:
       type: object
@@ -1221,7 +1212,7 @@ components:
           type: integer
         estado:
           type: string
-          enum: [PROGRAMADA, CONFIRMADA, COMPLETADA, CANCELADA]
+          enum: [PROGRAMADA, CONFIRMADA, EN_CURSO, COMPLETADA, CANCELADA, NO_ASISTIO]
         notas:
           type: string
           nullable: true
@@ -1606,6 +1597,9 @@ components:
         canceladas:
           type: integer
           example: 1
+        noAsistieron:
+          type: integer
+          example: 0
         ingresosEsperados:
           type: number
           format: float
