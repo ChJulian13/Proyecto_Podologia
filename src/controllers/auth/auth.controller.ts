@@ -20,10 +20,10 @@ export class AuthController {
         maxAge: cookieMaxAge
       });
 
-      res.status(200).json({ 
-        success: true, 
+      res.status(200).json({
+        success: true,
         message: 'Inicio de sesión exitoso',
-        data: usuario 
+        data: usuario
       });
     } catch (error) {
       next(error);
@@ -36,10 +36,10 @@ export class AuthController {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict'
     });
-    
-    res.status(200).json({ 
-      success: true, 
-      message: 'Sesión cerrada exitosamente' 
+
+    res.status(200).json({
+      success: true,
+      message: 'Sesión cerrada exitosamente'
     });
   };
 }
