@@ -19,6 +19,7 @@ export type CreateConsultaRecetaDTO = z.infer<typeof CreateConsultaRecetaSchema>
 
 export const CreateConsultaSchema = z.object({
   // IDs vinculados (obligatorios)
+  clinica_id:  z.string().uuid('UUID de clínica inválido'),
   cita_id:     z.string().uuid('UUID de cita inválido'),
   paciente_id: z.string().uuid('UUID de paciente inválido'),
   podologo_id: z.string().uuid('UUID de podólogo inválido'),
@@ -33,10 +34,6 @@ export const CreateConsultaSchema = z.object({
   fecha_proxima_consulta:  z.string().optional().nullable(), // ISO date string YYYY-MM-DD
   monto_procedimiento:     z.number().nonnegative().optional().nullable(),
 
-  // Flags de consentimiento
-  requiere_consentimiento: z.boolean().default(false),
-  consentimiento_firmado:  z.boolean().default(false),
-
   // Recetas opcionales (se crean en la misma transacción)
   recetas: z.array(CreateConsultaRecetaSchema).optional().default([]),
 });
@@ -50,8 +47,6 @@ export const UpdateConsultaSchema = z.object({
   indicaciones_cuidado:    z.string().max(2000).optional().nullable(),
   fecha_proxima_consulta:  z.string().optional().nullable(),
   monto_procedimiento:     z.number().nonnegative().optional().nullable(),
-  requiere_consentimiento: z.boolean().optional(),
-  consentimiento_firmado:  z.boolean().optional(),
 });
 
 export type UpdateConsultaDTO = z.infer<typeof UpdateConsultaSchema>;
@@ -72,6 +67,7 @@ export interface ConsultaRecetaRow {
 
 export interface ConsultaRow {
   id: string;
+  clinica_id: string;
   cita_id: string;
   paciente_id: string;
   podologo_id: string;
@@ -80,8 +76,6 @@ export interface ConsultaRow {
   procedimiento_detallado: string | null;
   indicaciones_cuidado: string | null;
   fecha_proxima_consulta: string | null;
-  requiere_consentimiento: number; // tinyint → 0 | 1
-  consentimiento_firmado: number;  // tinyint → 0 | 1
   monto_procedimiento: number | null;
   fecha_registro: Date;
 }
@@ -102,6 +96,7 @@ export interface ConsultaRecetaEntity {
 
 export interface ConsultaEntity {
   id: string;
+  clinicaId: string;
   citaId: string;
   pacienteId: string;
   podologoId: string;
@@ -110,8 +105,6 @@ export interface ConsultaEntity {
   procedimientoDetallado: string | null;
   indicacionesCuidado: string | null;
   fechaProximaConsulta: string | null;
-  requiereConsentimiento: boolean;
-  consentimientoFirmado: boolean;
   montoProcedimiento: number | null;
   fechaRegistro: Date;
   recetas: ConsultaRecetaEntity[];
@@ -136,6 +129,7 @@ export const mapConsultaRowToEntity = (
   recetas: ConsultaRecetaRow[] = []
 ): ConsultaEntity => ({
   id: row.id,
+  clinicaId: row.clinica_id,
   citaId: row.cita_id,
   pacienteId: row.paciente_id,
   podologoId: row.podologo_id,
@@ -146,8 +140,6 @@ export const mapConsultaRowToEntity = (
   fechaProximaConsulta: row.fecha_proxima_consulta
     ? new Date(row.fecha_proxima_consulta).toISOString().substring(0, 10)
     : null,
-  requiereConsentimiento: row.requiere_consentimiento === 1,
-  consentimientoFirmado: row.consentimiento_firmado === 1,
   montoProcedimiento: row.monto_procedimiento !== null ? Number(row.monto_procedimiento) : null,
   fechaRegistro: row.fecha_registro,
   recetas: recetas.map(mapRecetaRowToEntity),
