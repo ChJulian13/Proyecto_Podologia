@@ -245,4 +245,26 @@ export class InventarioRepository {
     );
     return rows[0] ?? null;
   }
+
+  /** Validar unicidad de código de barras dentro del mismo producto */
+  async findCodigoBarraByProductoYCodigo(inventarioId: string, codigoBarra: string): Promise<InventarioCodigoBarrasRow | null> {
+    const [rows] = await pool.execute<any[]>(
+      `SELECT * FROM inventario_codigos_barras 
+       WHERE inventario_id = ? AND codigo_barra = ? LIMIT 1`,
+      [inventarioId, codigoBarra]
+    );
+    return rows[0] ?? null;
+  }
+
+  /** Búsqueda multitenant segura: escanear código de barras filtrando por clínica */
+  async findProductoByCodigoBarraYClinica(codigoBarra: string, clinicaId: string): Promise<InventarioRow | null> {
+    const [rows] = await pool.execute<any[]>(
+      `${this.selectQuery}
+       INNER JOIN inventario_codigos_barras cb ON cb.inventario_id = i.id
+       WHERE cb.codigo_barra = ? AND i.clinica_id = ?
+       ${this.groupBy} LIMIT 1`,
+      [codigoBarra, clinicaId]
+    );
+    return rows[0] ?? null;
+  }
 }
