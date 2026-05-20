@@ -3,8 +3,18 @@ import { CitaRepository } from '../../repositories/cita/cita.repository.js';
 import { PacienteRepository } from '../../repositories/paciente/paciente.repository.js';
 import { UsuarioRepository } from '../../repositories/usuario/usuario.repository.js';
 import { ServicioRepository } from '../../repositories/servicio/servicio.repository.js';
-import { mapCitaRowToEntity, type CreateCitaDTO, type UpdateCitaDTO, type CitaEntity } from '../../domain/cita/cita.domain.js';
-import { NotFoundError, ConflictError, ValidationError } from '../../common/errors/domain.errors.js';
+import { mapCitaRowToEntity, type CreateCitaDTO, type UpdateCitaDTO, type CitaEntity, type EstadoCita } from '../../domain/cita/cita.domain.js';
+import { NotFoundError, ConflictError, ValidationError, BadRequestError } from '../../common/errors/domain.errors.js';
+
+// ── Máquina de estados: transiciones válidas de citas ──────────────────────
+const VALID_TRANSITIONS: Record<EstadoCita, EstadoCita[]> = {
+  PROGRAMADA:  ['CONFIRMADA', 'CANCELADA'],
+  CONFIRMADA:  ['EN_CURSO', 'CANCELADA', 'NO_ASISTIO'],
+  EN_CURSO:    ['COMPLETADA', 'NO_ASISTIO'],
+  COMPLETADA:  [],  // Estado terminal
+  CANCELADA:   [],  // Estado terminal
+  NO_ASISTIO:  [],  // Estado terminal
+};
 
 export class CitaService {
   private citaRepository = new CitaRepository();
@@ -88,6 +98,17 @@ export class CitaService {
     const newDuracion = data.duracion_minutos ?? existingCita.duracion_minutos;
     const newEstado = data.estado ?? existingCita.estado;
     const newNotas = data.notas !== undefined ? data.notas : existingCita.notas;
+
+    // Validar transición de estado (máquina de estados)
+    if (data.estado && data.estado !== existingCita.estado) {
+      const transicionesPermitidas = VALID_TRANSITIONS[existingCita.estado];
+      if (!transicionesPermitidas.includes(data.estado)) {
+        throw new BadRequestError(
+          `No se puede cambiar el estado de '${existingCita.estado}' a '${data.estado}'. ` +
+          `Transiciones válidas: ${transicionesPermitidas.length > 0 ? transicionesPermitidas.join(', ') : 'ninguna (estado terminal)'}`
+        );
+      }
+    }
 
     // Si se cambió la fecha, la hora o el doctor, verificar conflictos
     if (data.fecha_programada || data.hora_programada || data.podologo_id) {
