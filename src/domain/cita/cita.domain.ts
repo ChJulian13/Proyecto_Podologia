@@ -5,7 +5,7 @@ import { buildNombreCompleto } from '../../common/utils/name.utils.js';
 // ==========================================
 // 1. CAPA DE VALIDACIÓN (DTOs)
 // ==========================================
-export const CitaEstado = z.enum(['PROGRAMADA', 'CONFIRMADA', 'COMPLETADA', 'CANCELADA']);
+export const CitaEstado = z.enum(['PROGRAMADA', 'CONFIRMADA', 'EN_CURSO', 'COMPLETADA', 'CANCELADA', 'NO_ASISTIO']);
 export type EstadoCita = z.infer<typeof CitaEstado>;
 
 export const CreateCitaSchema = z.object({
