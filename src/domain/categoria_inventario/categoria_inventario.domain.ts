@@ -4,6 +4,7 @@ import { z } from 'zod';
 // 1. CAPA DE VALIDACIÓN (DTOs)
 // ==========================================
 export const CreateCategoriaInventarioSchema = z.object({
+  clinica_id: z.string().uuid("El ID de la clínica debe ser un UUID válido").optional().nullable(),
   nombre: z.string().min(2, "El nombre de la categoría es obligatorio (mínimo 2 caracteres)").max(50),
   descripcion: z.string().max(255).optional().nullable(),
 });
@@ -18,6 +19,7 @@ export type UpdateCategoriaInventarioDTO = z.infer<typeof UpdateCategoriaInventa
 // ==========================================
 export interface CategoriaInventarioRow {
   id: string;
+  clinica_id: string | null;
   nombre: string;
   descripcion: string | null;
   esta_activo: number;
@@ -29,6 +31,7 @@ export interface CategoriaInventarioRow {
 // ==========================================
 export interface CategoriaInventarioEntity {
   id: string;
+  clinicaId: string | null;
   nombre: string;
   descripcion: string | null;
   estaActivo: boolean;
@@ -40,6 +43,7 @@ export interface CategoriaInventarioEntity {
 // ==========================================
 export const mapCategoriaInventarioRowToEntity = (row: CategoriaInventarioRow): CategoriaInventarioEntity => ({
   id: row.id,
+  clinicaId: row.clinica_id,
   nombre: row.nombre,
   descripcion: row.descripcion,
   estaActivo: row.esta_activo === 1,
