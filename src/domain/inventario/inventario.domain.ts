@@ -66,6 +66,7 @@ export interface InventarioLoteRow {
 
 export interface InventarioCodigoBarrasRow {
   id: string;
+  clinica_id: string;
   inventario_id: string;
   codigo_barra: string;
   fecha_creacion: Date;
@@ -105,6 +106,7 @@ export interface InventarioLoteEntity {
 
 export interface InventarioCodigoBarrasEntity {
   id: string;
+  clinicaId: string;
   inventarioId: string;
   codigoBarra: string;
   fechaCreacion: Date;
@@ -161,6 +163,7 @@ export const mapLoteRowToEntity = (row: InventarioLoteRow): InventarioLoteEntity
 
 export const mapCodigoBarrasRowToEntity = (row: InventarioCodigoBarrasRow): InventarioCodigoBarrasEntity => ({
   id: row.id,
+  clinicaId: row.clinica_id,
   inventarioId: row.inventario_id,
   codigoBarra: row.codigo_barra,
   fechaCreacion: row.fecha_creacion,
