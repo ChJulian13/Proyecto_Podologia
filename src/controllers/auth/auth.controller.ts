@@ -9,11 +9,18 @@ export class AuthController {
   login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const validatedData = LoginSchema.parse(req.body);
-      const { token, usuario } = await this.authService.login(validatedData);
+      const result = await this.authService.login(validatedData);
 
+      if ('requiresSelection' in result) {
+         res.status(200).json(result);
+         return;
+      }
+
+      // At this point, TypeScript knows result is the success variant
+      const successResult = result as { success: true; token: string; usuario: any };
       const cookieMaxAge = env.JWT_EXPIRES_IN * 1000;
 
-      res.cookie('access_token', token, {
+      res.cookie('access_token', successResult.token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
@@ -23,7 +30,7 @@ export class AuthController {
       res.status(200).json({
         success: true,
         message: 'Inicio de sesión exitoso',
-        data: usuario
+        data: successResult.usuario
       });
     } catch (error) {
       next(error);
