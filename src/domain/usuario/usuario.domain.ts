@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { buildNombreCompleto } from '../../common/utils/name.utils.js';
 
 // ==========================================
-// 1. CAPA DE VALIDACIÓN (DTOs) - Se mantiene igual
+// 1. CAPA DE VALIDACIÓN (DTOs)
 // ==========================================
 export const UsuarioRol = z.enum(['ADMINISTRADOR', 'PODOLOGO', 'RECEPCIONISTA', 'CONTADOR']);
 export type RolUsuario = z.infer<typeof UsuarioRol>;
@@ -39,55 +39,67 @@ export type UpdatePasswordDTO = z.infer<typeof UpdatePasswordSchema>;
 // ==========================================
 export interface UsuarioRow {
   id: string;
-  clinica_id: string;
   correo: string;
   contrasena_hash: string;
   nombre: string;
   primer_apellido: string;
   segundo_apellido: string | null;
-  rol: RolUsuario;
   esta_activo: number; 
   fecha_creacion: Date;
-  // Campo extraído del JOIN
+  fecha_actualizacion: Date;
+}
+
+export interface UsuarioClinicaRow {
+  id: string;
+  usuario_id: string;
+  clinica_id: string;
+  rol: RolUsuario;
+  esta_activo: number;
   clinica_nombre?: string;
 }
 
 // ==========================================
 // 3. CAPA DE DOMINIO PURA (Angular - DTO Enriquecido)
 // ==========================================
+export interface UsuarioClinicaEntity {
+  id: string;
+  clinicaId: string;
+  clinicaNombre?: string | undefined;
+  rol: RolUsuario;
+  estaActivo: boolean;
+}
+
 export interface UsuarioEntity {
   id: string;
-  clinica: {
-    id: string;
-    nombre: string;
-  };
   correo: string;
   nombre: string;
   primerApellido: string;
   segundoApellido: string | null;
   nombreCompleto: string; // Para visualización inmediata en el header o tablas
-  rol: RolUsuario;
   estaActivo: boolean;
   fechaCreacion: Date;
+  asignaciones: UsuarioClinicaEntity[];
 }
 
 // ==========================================
 // 4. MAPPER
 // ==========================================
-export const mapUsuarioRowToEntity = (row: UsuarioRow): UsuarioEntity => {
+export const mapUsuarioRowToEntity = (row: UsuarioRow, asignacionesRow: UsuarioClinicaRow[] = []): UsuarioEntity => {
   return {
     id: row.id,
-    clinica: {
-      id: row.clinica_id,
-      nombre: row.clinica_nombre || 'Clínica Desconocida'
-    },
     correo: row.correo,
     nombre: row.nombre,
     primerApellido: row.primer_apellido,
     segundoApellido: row.segundo_apellido,
     nombreCompleto: buildNombreCompleto(row.nombre, row.primer_apellido, row.segundo_apellido),
-    rol: row.rol,
     estaActivo: row.esta_activo === 1,
     fechaCreacion: row.fecha_creacion,
+    asignaciones: asignacionesRow.map(uc => ({
+      id: uc.id,
+      clinicaId: uc.clinica_id,
+      clinicaNombre: uc.clinica_nombre,
+      rol: uc.rol,
+      estaActivo: uc.esta_activo === 1
+    })),
   };
 };
