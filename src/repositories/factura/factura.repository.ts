@@ -22,12 +22,13 @@ export class FacturaRepository {
 
   async create(
     id: string, clinicaId: string, pacienteId: string, consultaId: string | null,
-    numeroFactura: string, descripcion: string, monto: number
+    numeroFactura: string, descripcion: string, monto: number, creadoPorId: string,
+    esNotaCredito: boolean, facturaOriginalId: string | null
   ): Promise<void> {
     await pool.execute(
-      `INSERT INTO facturas (id, clinica_id, paciente_id, consulta_id, numero_factura, descripcion_servicio, monto) 
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [id, clinicaId, pacienteId, consultaId, numeroFactura, descripcion, monto]
+      `INSERT INTO facturas (id, clinica_id, paciente_id, consulta_id, numero_factura, descripcion_servicio, monto, creado_por_id, es_nota_credito, factura_original_id) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, clinicaId, pacienteId, consultaId, numeroFactura, descripcion, monto, creadoPorId, esNotaCredito, facturaOriginalId]
     );
   }
 
