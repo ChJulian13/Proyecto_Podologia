@@ -3,9 +3,10 @@ import type { CategoriaInventarioRow } from '../../domain/categoria_inventario/c
 
 export class CategoriaInventarioRepository {
 
-  async findAll(): Promise<CategoriaInventarioRow[]> {
+  async findAll(clinicaId: string): Promise<CategoriaInventarioRow[]> {
     const [rows] = await pool.execute<any[]>(
-      'SELECT * FROM categorias_inventario WHERE esta_activo = 1 ORDER BY nombre ASC'
+      'SELECT * FROM categorias_inventario WHERE esta_activo = 1 AND (clinica_id = ? OR clinica_id IS NULL) ORDER BY nombre ASC',
+      [clinicaId]
     );
     return rows;
   }
@@ -18,18 +19,18 @@ export class CategoriaInventarioRepository {
     return rows[0] ?? null;
   }
 
-  async findByNombre(nombre: string): Promise<CategoriaInventarioRow | null> {
+  async findByNombre(nombre: string, clinicaId: string): Promise<CategoriaInventarioRow | null> {
     const [rows] = await pool.execute<any[]>(
-      'SELECT * FROM categorias_inventario WHERE nombre = ? LIMIT 1',
-      [nombre]
+      'SELECT * FROM categorias_inventario WHERE nombre = ? AND (clinica_id = ? OR clinica_id IS NULL) LIMIT 1',
+      [nombre, clinicaId]
     );
     return rows[0] ?? null;
   }
 
-  async create(id: string, nombre: string, descripcion: string | null): Promise<void> {
+  async create(id: string, clinicaId: string | null, nombre: string, descripcion: string | null): Promise<void> {
     await pool.execute(
-      'INSERT INTO categorias_inventario (id, nombre, descripcion) VALUES (?, ?, ?)',
-      [id, nombre, descripcion]
+      'INSERT INTO categorias_inventario (id, clinica_id, nombre, descripcion) VALUES (?, ?, ?, ?)',
+      [id, clinicaId, nombre, descripcion]
     );
   }
 
