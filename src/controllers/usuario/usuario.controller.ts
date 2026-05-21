@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import { UsuarioService } from '../../services/usuario/usuario.service.js';
 import { CreateUsuarioSchema, UpdateUsuarioSchema, UpdatePasswordSchema } from '../../domain/usuario/usuario.domain.js';
+import type { AuthRequest } from '../../middleware/auth/auth.middleware.js';
 
 export class UsuarioController {
   private usuarioService = new UsuarioService();
@@ -28,8 +29,9 @@ export class UsuarioController {
   update = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params as Record<string, string>;
+      const clinicaId = (req as AuthRequest).usuario!.clinicaId!;
       const validatedData = UpdateUsuarioSchema.parse(req.body);
-      const usuarioActualizado = await this.usuarioService.update(id!, validatedData);
+      const usuarioActualizado = await this.usuarioService.update(id!, validatedData, clinicaId);
       res.status(200).json({ success: true, message: 'Usuario actualizado', data: usuarioActualizado });
     } catch (error) {
       next(error);
@@ -39,8 +41,9 @@ export class UsuarioController {
   delete = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params as Record<string, string>;
-      await this.usuarioService.delete(id!);
-      res.status(200).json({ success: true, message: 'Usuario desactivado exitosamente' });
+      const clinicaId = (req as AuthRequest).usuario!.clinicaId!;
+      await this.usuarioService.delete(id!, clinicaId);
+      res.status(200).json({ success: true, message: 'Usuario desactivado exitosamente de la clínica' });
     } catch (error) {
       next(error);
     }
