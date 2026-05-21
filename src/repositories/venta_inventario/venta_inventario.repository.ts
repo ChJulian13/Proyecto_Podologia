@@ -44,13 +44,13 @@ export class VentaInventarioRepository {
   async createWithTransaction(
     connection: PoolConnection,
     id: string, clinicaId: string, pacienteId: string | null, facturaId: string | null,
-    inventarioItemId: string, cantidad: number, precioVenta: number
+    vendidoPorId: string, inventarioItemId: string, cantidad: number, precioVenta: number
   ): Promise<void> {
     await connection.execute(
       `INSERT INTO ventas_inventario 
-       (id, clinica_id, paciente_id, factura_id, inventario_item_id, cantidad, precio_venta) 
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [id, clinicaId, pacienteId, facturaId, inventarioItemId, cantidad, precioVenta]
+       (id, clinica_id, paciente_id, factura_id, vendido_por_id, inventario_item_id, cantidad, precio_venta) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, clinicaId, pacienteId, facturaId, vendidoPorId, inventarioItemId, cantidad, precioVenta]
     );
   }
 
