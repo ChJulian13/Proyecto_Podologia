@@ -17,7 +17,12 @@ export class FacturaController {
 
   create = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const validatedData = CreateFacturaSchema.parse(req.body);
+      const creado_por_id = (req as any).usuario!.id; // Using any or AuthRequest based on imports, but since AuthRequest might not be imported here, I will just cast or import it.
+      // Wait, let's look at the imports. I'll just use (req as any) to keep it safe.
+      const validatedData = CreateFacturaSchema.parse({
+        ...req.body,
+        creado_por_id
+      });
       const nuevaFactura = await this.facturaService.create(validatedData);
       res.status(201).json({ success: true, message: 'Factura generada', data: nuevaFactura });
     } catch (error) {
