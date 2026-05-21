@@ -41,8 +41,13 @@ export class CitaService {
     }
 
     const podologo = await this.usuarioRepository.findById(data.podologo_id);
-    if (!podologo || podologo.clinica_id !== data.clinica_id) {
-      throw new ValidationError([{ path: ['podologo_id'], message: 'El podólogo no existe o no pertenece a esta clínica' }]);
+    if (!podologo) {
+      throw new ValidationError([{ path: ['podologo_id'], message: 'El podólogo no existe' }]);
+    }
+    // Validar pertenencia a la clínica (multitenant)
+    const podologoAsignaciones = await this.usuarioRepository.findAsignaciones(data.podologo_id);
+    if (!podologoAsignaciones.some(a => a.clinica_id === data.clinica_id)) {
+      throw new ValidationError([{ path: ['podologo_id'], message: 'El podólogo no pertenece a esta clínica' }]);
     }
 
     if (data.servicio_id) {
