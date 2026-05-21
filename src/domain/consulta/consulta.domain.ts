@@ -47,6 +47,7 @@ export const UpdateConsultaSchema = z.object({
   indicaciones_cuidado:    z.string().max(2000).optional().nullable(),
   fecha_proxima_consulta:  z.string().optional().nullable(),
   monto_procedimiento:     z.number().nonnegative().optional().nullable(),
+  modificado_por_id:       z.string().uuid('UUID de usuario inválido').optional(),
 });
 
 export type UpdateConsultaDTO = z.infer<typeof UpdateConsultaSchema>;
@@ -77,6 +78,7 @@ export interface ConsultaRow {
   indicaciones_cuidado: string | null;
   fecha_proxima_consulta: string | null;
   monto_procedimiento: number | null;
+  modificado_por_id: string | null;
   fecha_registro: Date;
 }
 
@@ -106,6 +108,7 @@ export interface ConsultaEntity {
   indicacionesCuidado: string | null;
   fechaProximaConsulta: string | null;
   montoProcedimiento: number | null;
+  modificadoPorId: string | null;
   fechaRegistro: Date;
   recetas: ConsultaRecetaEntity[];
 }
@@ -141,6 +144,7 @@ export const mapConsultaRowToEntity = (
     ? new Date(row.fecha_proxima_consulta).toISOString().substring(0, 10)
     : null,
   montoProcedimiento: row.monto_procedimiento !== null ? Number(row.monto_procedimiento) : null,
+  modificadoPorId: row.modificado_por_id,
   fechaRegistro: row.fecha_registro,
   recetas: recetas.map(mapRecetaRowToEntity),
 });
