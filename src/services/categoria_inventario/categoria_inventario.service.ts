@@ -11,8 +11,8 @@ import {
 export class CategoriaInventarioService {
   private categoriaRepository = new CategoriaInventarioRepository();
 
-  async getAll(): Promise<CategoriaInventarioEntity[]> {
-    const rows = await this.categoriaRepository.findAll();
+  async getAll(clinicaId: string): Promise<CategoriaInventarioEntity[]> {
+    const rows = await this.categoriaRepository.findAll(clinicaId);
     return rows.map(mapCategoriaInventarioRowToEntity);
   }
 
@@ -22,19 +22,20 @@ export class CategoriaInventarioService {
     return mapCategoriaInventarioRowToEntity(row);
   }
 
-  async create(data: CreateCategoriaInventarioDTO): Promise<CategoriaInventarioEntity> {
-    // Verificar nombre duplicado (UNIQUE KEY en BD)
-    const existente = await this.categoriaRepository.findByNombre(data.nombre);
+  async create(data: CreateCategoriaInventarioDTO, clinicaId: string): Promise<CategoriaInventarioEntity> {
+    // Verificar nombre duplicado en la clínica o global
+    const existente = await this.categoriaRepository.findByNombre(data.nombre, clinicaId);
     if (existente) {
       throw new ConflictError(`Ya existe una categoría con el nombre "${data.nombre}"`);
     }
 
     const newId = crypto.randomUUID();
-    await this.categoriaRepository.create(newId, data.nombre, data.descripcion ?? null);
+    const clinicaInsert = data.clinica_id === null ? null : clinicaId;
+    await this.categoriaRepository.create(newId, clinicaInsert, data.nombre, data.descripcion ?? null);
     return await this.getById(newId);
   }
 
-  async update(id: string, data: UpdateCategoriaInventarioDTO): Promise<CategoriaInventarioEntity> {
+  async update(id: string, data: UpdateCategoriaInventarioDTO, clinicaId: string): Promise<CategoriaInventarioEntity> {
     const existingRow = await this.categoriaRepository.findById(id);
     if (!existingRow) throw new NotFoundError('Categoría de inventario');
 
@@ -43,7 +44,7 @@ export class CategoriaInventarioService {
 
     // Si cambia el nombre, verificar que no duplique
     if (data.nombre && data.nombre !== existingRow.nombre) {
-      const duplicada = await this.categoriaRepository.findByNombre(data.nombre);
+      const duplicada = await this.categoriaRepository.findByNombre(data.nombre, clinicaId);
       if (duplicada) {
         throw new ConflictError(`Ya existe una categoría con el nombre "${data.nombre}"`);
       }
