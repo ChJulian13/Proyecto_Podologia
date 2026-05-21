@@ -147,6 +147,7 @@ export class ConsultaRepository {
       'indicaciones_cuidado',
       'fecha_proxima_consulta',
       'monto_procedimiento',
+      'modificado_por_id',
     ];
 
     const fields: string[] = [];
