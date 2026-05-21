@@ -89,7 +89,9 @@ export const CreateAnamnesisSchema = z.object({
 
   // Términos y firma
   acepta_terminos: z.boolean().default(false),
+  fecha_acepta_terminos: z.string().datetime().optional().nullable(),
   lugar_firma: z.string().max(150).optional().nullable(),
+  url_firma_digital: z.string().url().optional().nullable(),
 });
 
 export type CreateAnamnesisDTO = z.infer<typeof CreateAnamnesisSchema>;
@@ -150,7 +152,9 @@ export interface AnamnesisRow {
   escala_nutricion: number | null;
   escala_ejercicio: number | null;
   acepta_terminos: number;
+  fecha_acepta_terminos: Date | null;
   lugar_firma: string | null;
+  url_firma_digital: string | null;
   fecha_creacion: Date;
   fecha_actualizacion: Date;
 
@@ -240,7 +244,9 @@ export interface AnamnesisEntity {
   escalaNutricion: number | null;
   escalaEjercicio: number | null;
   aceptaTerminos: boolean;
+  fechaAceptaTerminos: Date | null;
   lugarFirma: string | null;
+  urlFirmaDigital: string | null;
   fechaCreacion: Date;
   fechaActualizacion: Date;
   alergias: string | null;
@@ -313,7 +319,9 @@ export const mapAnamnesisRowToEntity = (row: AnamnesisRow): AnamnesisEntity => (
   escalaNutricion: row.escala_nutricion,
   escalaEjercicio: row.escala_ejercicio,
   aceptaTerminos: row.acepta_terminos === 1,
+  fechaAceptaTerminos: row.fecha_acepta_terminos,
   lugarFirma: row.lugar_firma,
+  urlFirmaDigital: row.url_firma_digital,
   fechaCreacion: row.fecha_creacion,
   fechaActualizacion: row.fecha_actualizacion,
   alergias: row.alergias,
