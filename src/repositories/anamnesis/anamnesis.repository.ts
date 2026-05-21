@@ -126,7 +126,9 @@ export class AnamnesisRepository {
       escala_nutricion?: number | null;
       escala_ejercicio?: number | null;
       acepta_terminos: boolean;
+      fecha_acepta_terminos?: string | null;
       lugar_firma?: string | null;
+      url_firma_digital?: string | null;
     }
   ): Promise<void> {
     await connection.execute(
@@ -143,7 +145,7 @@ export class AnamnesisRepository {
         condicion_trombosis, condicion_entumecimiento, condicion_esguinces,
         condicion_explicacion, mapa_corporal_url,
         escala_sueno, escala_energia, escala_estres, escala_nutricion, escala_ejercicio,
-        acepta_terminos, lugar_firma
+        acepta_terminos, fecha_acepta_terminos, lugar_firma, url_firma_digital
       ) VALUES (
         ?, ?, ?, ?, ?, ?,
         ?, ?,
@@ -157,7 +159,7 @@ export class AnamnesisRepository {
         ?, ?, ?,
         ?, ?,
         ?, ?, ?, ?, ?,
-        ?, ?
+        ?, ?, ?, ?
       )`,
       [
         id, data.clinica_id, data.paciente_id, data.alergias ?? null, data.discapacidad ?? null, data.profesion ?? null,
@@ -173,7 +175,7 @@ export class AnamnesisRepository {
         data.condicion_explicacion ?? null, data.mapa_corporal_url ?? null,
         data.escala_sueno ?? null, data.escala_energia ?? null, data.escala_estres ?? null,
         data.escala_nutricion ?? null, data.escala_ejercicio ?? null,
-        data.acepta_terminos ? 1 : 0, data.lugar_firma ?? null
+        data.acepta_terminos ? 1 : 0, data.fecha_acepta_terminos ?? null, data.lugar_firma ?? null, data.url_firma_digital ?? null
       ] as any[]
     );
   }
@@ -198,7 +200,7 @@ export class AnamnesisRepository {
       'condicion_trombosis', 'condicion_entumecimiento', 'condicion_esguinces',
       'condicion_explicacion', 'mapa_corporal_url',
       'escala_sueno', 'escala_energia', 'escala_estres', 'escala_nutricion', 'escala_ejercicio',
-      'acepta_terminos', 'lugar_firma'
+      'acepta_terminos', 'fecha_acepta_terminos', 'lugar_firma', 'url_firma_digital'
     ];
 
     // Campos booleanos que deben convertirse a 0/1
