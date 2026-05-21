@@ -347,6 +347,10 @@ components:
         id:
           type: string
           format: uuid
+        clinicaId:
+          type: string
+          format: uuid
+          description: "Derivado automáticamente del inventario.clinica_id vía trigger"
         inventarioId:
           type: string
           format: uuid
@@ -402,6 +406,10 @@ components:
         fechaVenta:
           type: string
           format: date-time
+        vendidoPorId:
+          type: string
+          format: uuid
+          description: "UUID del usuario que realizó la venta (auditoría)"
         estaCancelada:
           type: boolean
 
@@ -440,6 +448,10 @@ components:
           type: string
           format: uuid
           nullable: true
+        vendido_por_id:
+          type: string
+          format: uuid
+          description: "UUID del usuario que realizó la venta"
         productos:
           type: array
           minItems: 1
@@ -608,9 +620,18 @@ components:
           nullable: true
         aceptaTerminos:
           type: boolean
+        fechaAceptaTerminos:
+          type: string
+          format: date-time
+          nullable: true
+          description: "Momento exacto en que el paciente aceptó los términos y firmó"
         lugarFirma:
           type: string
           nullable: true
+        urlFirmaDigital:
+          type: string
+          nullable: true
+          description: "Ruta de imagen o PDF con la firma electrónica del paciente"
         fechaCreacion:
           type: string
           format: date-time
@@ -791,10 +812,20 @@ components:
         acepta_terminos:
           type: boolean
           default: false
+        fecha_acepta_terminos:
+          type: string
+          format: date-time
+          nullable: true
+          description: "Momento exacto en que el paciente aceptó los términos"
         lugar_firma:
           type: string
           maxLength: 150
           nullable: true
+        url_firma_digital:
+          type: string
+          format: uri
+          nullable: true
+          description: "URL de la firma electrónica del paciente"
 
     UpdateAnamnesisDTO:
       type: object
@@ -937,9 +968,17 @@ components:
           nullable: true
         acepta_terminos:
           type: boolean
+        fecha_acepta_terminos:
+          type: string
+          format: date-time
+          nullable: true
         lugar_firma:
           type: string
           maxLength: 150
+          nullable: true
+        url_firma_digital:
+          type: string
+          format: uri
           nullable: true
 
     # --- CONSULTAS (Acto Médico) ---
@@ -1020,6 +1059,11 @@ components:
         fechaRegistro:
           type: string
           format: date-time
+        modificadoPorId:
+          type: string
+          format: uuid
+          nullable: true
+          description: "UUID del usuario que realizó la última modificación (auditoría)"
         recetas:
           type: array
           items:
@@ -1131,6 +1175,10 @@ components:
           format: float
           minimum: 0
           nullable: true
+        modificado_por_id:
+          type: string
+          format: uuid
+          description: "UUID del usuario que realizó la modificación (se inyecta desde el token JWT)"
 
     CitaEntity:
       type: object
@@ -1327,12 +1375,24 @@ components:
           enum: [PENDIENTE, PAGADO]
         metodoPago:
           type: string
-          enum: [EFECTIVO, TARJETA, TRANSFERENCIA]
+          enum: [EFECTIVO, TARJETA, TRANSFERENCIA, CHEQUE, CREDITO_CLINICA]
           nullable: true
         fechaPago:
           type: string
           format: date-time
           nullable: true
+        creadoPorId:
+          type: string
+          format: uuid
+          description: "UUID del usuario que creó la factura (auditoría)"
+        esNotaCredito:
+          type: boolean
+          description: "Indica si esta factura es una nota de crédito"
+        facturaOriginalId:
+          type: string
+          format: uuid
+          nullable: true
+          description: "Si es nota de crédito, referencia a la factura original"
 
     ImagenPacienteEntity:
       type: object
@@ -1485,33 +1545,38 @@ components:
           type: string
           format: date-time
 
-    UsuarioEntity:
+    UsuarioClinicaEntity:
       type: object
-      required:
-        - id
-        - clinica
-        - correo
-        - nombre
-        - primerApellido
-        - nombreCompleto
-        - rol
-        - estaActivo
-        - fechaCreacion
       properties:
         id:
           type: string
           format: uuid
-        clinica:
-          type: object
-          required:
-            - id
-            - nombre
-          properties:
-            id:
-              type: string
-              format: uuid
-            nombre:
-              type: string
+        clinicaId:
+          type: string
+          format: uuid
+        clinicaNombre:
+          type: string
+        rol:
+          type: string
+          enum: [ADMINISTRADOR, PODOLOGO, RECEPCIONISTA, CONTADOR]
+        estaActivo:
+          type: boolean
+
+    UsuarioEntity:
+      type: object
+      required:
+        - id
+        - correo
+        - nombre
+        - primerApellido
+        - nombreCompleto
+        - estaActivo
+        - fechaCreacion
+        - asignaciones
+      properties:
+        id:
+          type: string
+          format: uuid
         correo:
           type: string
           format: email
@@ -1525,14 +1590,106 @@ components:
         nombreCompleto:
           type: string
           description: Nombre concatenado listo para mostrar en el perfil o tablas
-        rol:
-          type: string
-          enum: [ADMINISTRADOR, PODOLOGO, RECEPCIONISTA]
         estaActivo:
           type: boolean
         fechaCreacion:
           type: string
           format: date-time
+        asignaciones:
+          type: array
+          description: "Clínicas asignadas al usuario con sus roles (multitenant)"
+          items:
+            $ref: '#/components/schemas/UsuarioClinicaEntity'
+ 
+    # --- CONSENTIMIENTOS INFORMADOS ---
+    ConsentimientoEntity:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        clinicaId:
+          type: string
+          format: uuid
+        pacienteId:
+          type: string
+          format: uuid
+        consultaId:
+          type: string
+          format: uuid
+          nullable: true
+        tipoDocumento:
+          type: string
+          example: "Consentimiento para procedimiento podológico"
+        estadoFirma:
+          type: string
+          enum: [PENDIENTE, FIRMADO, RECHAZADO, VENCIDO]
+        urlDocumento:
+          type: string
+          nullable: true
+          description: "URL del documento de consentimiento"
+        fechaFirma:
+          type: string
+          format: date-time
+          nullable: true
+        ipFirma:
+          type: string
+          nullable: true
+          description: "Dirección IP desde la cual se firmó el consentimiento"
+        fechaCreacion:
+          type: string
+          format: date-time
+        fechaActualizacion:
+          type: string
+          format: date-time
+
+    CreateConsentimientoDTO:
+      type: object
+      required:
+        - clinica_id
+        - paciente_id
+        - tipo_documento
+      properties:
+        clinica_id:
+          type: string
+          format: uuid
+        paciente_id:
+          type: string
+          format: uuid
+        consulta_id:
+          type: string
+          format: uuid
+          nullable: true
+        tipo_documento:
+          type: string
+          minLength: 1
+        estado_firma:
+          type: string
+          enum: [PENDIENTE, FIRMADO, RECHAZADO, VENCIDO]
+          default: PENDIENTE
+        url_documento:
+          type: string
+          format: uri
+          nullable: true
+
+    UpdateConsentimientoDTO:
+      type: object
+      properties:
+        estado_firma:
+          type: string
+          enum: [PENDIENTE, FIRMADO, RECHAZADO, VENCIDO]
+        url_documento:
+          type: string
+          format: uri
+          nullable: true
+        fecha_firma:
+          type: string
+          format: date-time
+          nullable: true
+        ip_firma:
+          type: string
+          nullable: true
+
 
     IngresoEntity:
       type: object
@@ -1801,7 +1958,12 @@ paths:
   # --- AUTENTICACIÓN ---
   /api/auth/login:
     post:
-      summary: Iniciar sesión en el sistema
+      summary: Iniciar sesión en el sistema (multitenant)
+      description: |
+        Flujo de autenticación multitenant:
+        1. Si el usuario tiene **1 sola clínica activa**, se loguea automáticamente y se emite el JWT.
+        2. Si tiene **múltiples clínicas** y NO envía `clinica_id`, se devuelve `requiresSelection: true` con la lista de clínicas disponibles. El frontend debe repetir la petición incluyendo el `clinica_id` elegido.
+        3. Si envía `clinica_id`, se loguea directamente en esa clínica.
       tags:
         - Autenticación
       requestBody:
@@ -1821,22 +1983,53 @@ paths:
                 contrasena:
                   type: string
                   example: "Segura123!"
+                clinica_id:
+                  type: string
+                  format: uuid
+                  description: "Opcional. Si el usuario pertenece a múltiples clínicas, debe enviar este campo para seleccionar una."
       responses:
         '200':
-          description: Inicio de sesión exitoso. Se inyecta la cookie HttpOnly de forma transparente.
+          description: |
+            Puede devolver dos payloads distintos:
+            - **Login exitoso**: `success: true`, cookie JWT, y `data` con UsuarioEntity.
+            - **Selección requerida**: `success: true`, `requiresSelection: true`, y `availableClinics` con la lista de clínicas.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: "Inicio de sesión exitoso"
-                  data:
-                    $ref: '#/components/schemas/UsuarioEntity'
+                oneOf:
+                  - type: object
+                    description: "Login exitoso (1 clínica o clinica_id provisto)"
+                    properties:
+                      success:
+                        type: boolean
+                        example: true
+                      message:
+                        type: string
+                        example: "Inicio de sesión exitoso"
+                      data:
+                        $ref: '#/components/schemas/UsuarioEntity'
+                  - type: object
+                    description: "Selección de clínica requerida (múltiples clínicas)"
+                    properties:
+                      success:
+                        type: boolean
+                        example: true
+                      requiresSelection:
+                        type: boolean
+                        example: true
+                      availableClinics:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              format: uuid
+                            nombre:
+                              type: string
+                            rol:
+                              type: string
+                              enum: [ADMINISTRADOR, PODOLOGO, RECEPCIONISTA, CONTADOR]
         '400':
           description: Error de validación Zod.
         '401':
