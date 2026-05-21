@@ -27,7 +27,11 @@ export class VentaInventarioController {
 
   create = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const validatedData = CreateVentaInventarioSchema.parse(req.body);
+      const vendido_por_id = (req as any).usuario!.id;
+      const validatedData = CreateVentaInventarioSchema.parse({
+         ...req.body,
+         vendido_por_id
+      });
 
       const nuevasVentas = await this.ventaService.create(validatedData);
 
