@@ -48,6 +48,13 @@ export const errorHandler = (
     return;
   }
 
+  // Captura de errores de MySQL (Triggers, Constraints)
+  const sqlError = error as any;
+  if (sqlError.sqlState === '45000') {
+    res.status(400).json({ success: false, message: sqlError.message });
+    return;
+  }
+
   // Error Crítico (Unhandled)
   console.error(`[${req.method}] ${req.path} >>`, error);
   res.status(500).json({ success: false, message: 'Error interno del servidor' });
