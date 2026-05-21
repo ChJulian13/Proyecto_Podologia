@@ -39,7 +39,8 @@ export class FacturaService {
     const newId = crypto.randomUUID();
     await this.facturaRepository.create(
       newId, data.clinica_id, data.paciente_id, data.consulta_id ?? null,
-      data.numero_factura, data.descripcion_servicio, data.monto
+      data.numero_factura, data.descripcion_servicio, data.monto,
+      data.creado_por_id, data.es_nota_credito, data.factura_original_id ?? null
     );
 
     const nuevaFactura = await this.facturaRepository.findById(newId);
