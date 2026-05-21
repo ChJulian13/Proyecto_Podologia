@@ -83,7 +83,11 @@ export class ConsultaController {
   update = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params as Record<string, string>;
-      const validatedData = UpdateConsultaSchema.parse(req.body);
+      const modificado_por_id = (req as AuthRequest).usuario!.id;
+      const validatedData = UpdateConsultaSchema.parse({
+         ...req.body,
+         modificado_por_id
+      });
       const updatedConsulta = await this.consultaService.update(id!, validatedData);
       res.status(200).json({
         success: true,
