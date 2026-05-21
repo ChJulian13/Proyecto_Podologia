@@ -62,6 +62,7 @@ export class VentaInventarioService {
           data.clinica_id,
           data.paciente_id ?? null,
           data.factura_id ?? null,
+          data.vendido_por_id,
           prod.inventario_item_id,
           prod.cantidad,
           prod.precio_venta
