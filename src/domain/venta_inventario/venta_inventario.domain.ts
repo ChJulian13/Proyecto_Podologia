@@ -13,6 +13,7 @@ export const CreateVentaInventarioSchema = z.object({
   clinica_id: z.string().uuid("El ID de la clínica debe ser un UUID válido"),
   paciente_id: z.string().uuid("UUID de paciente inválido").optional().nullable(),
   factura_id: z.string().uuid("UUID de factura inválido").optional().nullable(),
+  vendido_por_id: z.string().uuid("UUID de usuario inválido"),
   productos: z.array(ItemVentaSchema).min(1, "Debe incluir al menos un producto en la venta"),
 });
 
@@ -26,6 +27,7 @@ export interface VentaInventarioRow {
   clinica_id: string;
   paciente_id: string | null;
   factura_id: string | null;
+  vendido_por_id: string;
   inventario_item_id: string;
   cantidad: number;
   precio_venta: string; // MySQL DECIMAL → string
@@ -50,6 +52,7 @@ export interface VentaInventarioEntity {
   clinicaId: string;
   pacienteId: string | null;
   facturaId: string | null;
+  vendidoPorId: string;
   inventarioItem: {
     id: string;
     nombre: string;
@@ -75,6 +78,7 @@ export const mapVentaInventarioRowToEntity = (row: VentaInventarioRow): VentaInv
   clinicaId: row.clinica_id,
   pacienteId: row.paciente_id,
   facturaId: row.factura_id,
+  vendidoPorId: row.vendido_por_id,
   inventarioItem: {
     id: row.inventario_item_id,
     nombre: row.item_nombre || 'Artículo Desconocido',
